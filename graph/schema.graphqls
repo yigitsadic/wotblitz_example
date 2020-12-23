@@ -1,8 +1,45 @@
 type Tank {
   name: String!
   tier: Int!
+  nextTanks: [Tank]
+  stockModules: [Module]
+  isPremium: Boolean!
+  tankClass: TankClass!
+  country: Country!
+}
+
+type Module {
+  type: ModuleType!
+  name: String!
+  following: Module
+}
+
+enum Country {
+  USA
+  Germany
+  USRR
+  UK
+  Japan
+  China
+  France
+  EuropeanNation
+}
+
+enum ModuleType {
+  Turret
+  Gun
+  Engine
+  Suspension
+}
+
+enum TankClass {
+  TankDestroyer
+  LightTank
+  MediumTank
+  HeavyTank
 }
 
 type Query {
-  tanks: [Tank!]!
+  tanks: [Tank]
+  techTree(countryName: String!): [Tank]
 }

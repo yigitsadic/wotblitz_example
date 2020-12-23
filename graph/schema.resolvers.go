@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/yigitsadic/wotblitz_example/graph/generated"
 	"github.com/yigitsadic/wotblitz_example/graph/model"
@@ -13,16 +14,26 @@ import (
 func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
 	tanks := []*model.Tank{
 		{
-			Name: "Tiger II",
-			Tier: 8,
+			Name:      "Tiger II",
+			Tier:      8,
+			IsPremium: false,
+			TankClass: model.TankClassHeavyTank,
+			Country:   model.CountryGermany,
 		},
 		{
-			Name: "IS-3",
-			Tier: 8,
+			Name:      "IS-3",
+			Tier:      8,
+			IsPremium: false,
+			TankClass: model.TankClassHeavyTank,
+			Country:   model.CountryUsrr,
 		},
 	}
 
 	return tanks, nil
+}
+
+func (r *queryResolver) TechTree(ctx context.Context, countryName string) ([]*model.Tank, error) {
+	panic(fmt.Errorf("not implemented"))
 }
 
 // Query returns generated.QueryResolver implementation.
