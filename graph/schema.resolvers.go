@@ -5,25 +5,27 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/yigitsadic/wotblitz_example/graph/generated"
 	"github.com/yigitsadic/wotblitz_example/graph/model"
 )
 
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented"))
-}
+func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
+	tanks := []*model.Tank{
+		{
+			Name: "Tiger II",
+			Tier: 8,
+		},
+		{
+			Name: "IS-3",
+			Tier: 8,
+		},
+	}
 
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented"))
+	return tanks, nil
 }
-
-// Mutation returns generated.MutationResolver implementation.
-func (r *Resolver) Mutation() generated.MutationResolver { return &mutationResolver{r} }
 
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
-type mutationResolver struct{ *Resolver }
 type queryResolver struct{ *Resolver }
