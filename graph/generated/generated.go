@@ -48,6 +48,7 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
+		Tank     func(childComplexity int, name string) int
 		Tanks    func(childComplexity int) int
 		TechTree func(childComplexity int, country model.Country) int
 	}
@@ -65,6 +66,7 @@ type ComplexityRoot struct {
 
 type QueryResolver interface {
 	Tanks(ctx context.Context) ([]*model.Tank, error)
+	Tank(ctx context.Context, name string) (*model.Tank, error)
 	TechTree(ctx context.Context, country model.Country) ([]*model.Tank, error)
 }
 
@@ -103,6 +105,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Module.Type(childComplexity), true
+
+	case "Query.tank":
+		if e.complexity.Query.Tank == nil {
+			break
+		}
+
+		args, err := ec.field_Query_tank_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Tank(childComplexity, args["name"].(string)), true
 
 	case "Query.tanks":
 		if e.complexity.Query.Tanks == nil {
@@ -265,6 +279,8 @@ enum TankClass {
 
 type Query {
   tanks: [Tank]
+  tank(name: String!): Tank
+
   techTree(country: Country!): [Tank]
 }
 `, BuiltIn: false},
@@ -276,6 +292,21 @@ var parsedSchema = gqlparser.MustLoadSchema(sources...)
 // region    ***************************** args.gotpl *****************************
 
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_tank_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
 	var arg0 string
@@ -475,6 +506,45 @@ func (ec *executionContext) _Query_tanks(ctx context.Context, field graphql.Coll
 	res := resTmp.([]*model.Tank)
 	fc.Result = res
 	return ec.marshalOTank2ᚕᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐTank(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_tank(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_tank_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Tank(rctx, args["name"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.Tank)
+	fc.Result = res
+	return ec.marshalOTank2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐTank(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_techTree(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1979,6 +2049,17 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 					}
 				}()
 				res = ec._Query_tanks(ctx, field)
+				return res
+			})
+		case "tank":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_tank(ctx, field)
 				return res
 			})
 		case "techTree":

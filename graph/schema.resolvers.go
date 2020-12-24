@@ -5,11 +5,11 @@ package graph
 
 import (
 	"context"
-	"github.com/yigitsadic/wotblitz_example/shared"
 	"log"
 
 	"github.com/yigitsadic/wotblitz_example/graph/generated"
 	"github.com/yigitsadic/wotblitz_example/graph/model"
+	"github.com/yigitsadic/wotblitz_example/shared"
 )
 
 func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
@@ -34,6 +34,22 @@ func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
 	}
 
 	return tanks, nil
+}
+
+func (r *queryResolver) Tank(ctx context.Context, name string) (*model.Tank, error) {
+	tank, err := r.Repository.FetchTankByName(name)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	return &model.Tank{
+		Name:      tank.Name,
+		Tier:      tank.Tier,
+		IsPremium: tank.IsPremium,
+		TankClass: shared.MapTankClass(tank.TankClass),
+		Country:   shared.MapTankCountry(tank.Country),
+	}, nil
 }
 
 func (r *queryResolver) TechTree(ctx context.Context, country model.Country) ([]*model.Tank, error) {

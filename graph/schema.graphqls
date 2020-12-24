@@ -41,5 +41,7 @@ enum TankClass {
 
 type Query {
   tanks: [Tank]
+  tank(name: String!): Tank
+
   techTree(country: Country!): [Tank]
 }

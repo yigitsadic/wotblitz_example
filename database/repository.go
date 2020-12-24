@@ -1,6 +1,7 @@
 package database
 
 import (
+	"errors"
 	"github.com/yigitsadic/wotblitz_example/graph/model"
 	"github.com/yigitsadic/wotblitz_example/shared"
 )
@@ -30,8 +31,15 @@ func (r *Repository) FetchTanksByCountry(countryName model.Country) ([]*TankSche
 	return tanks, nil
 }
 
-func (r *Repository) FetchTankById(id int) (*TankSchema, error) {
-	return nil, nil
+// Returns tank with matched name.
+func (r *Repository) FetchTankByName(name string) (*TankSchema, error) {
+	for _, tank := range r.Schema.Tanks {
+		if tank.Name == name {
+			return tank, nil
+		}
+	}
+
+	return nil, errors.New("tank not found")
 }
 
 func (r *Repository) FetchTanksByIds(ids []int) ([]*TankSchema, error) {
