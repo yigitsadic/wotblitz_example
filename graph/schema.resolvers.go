@@ -5,12 +5,37 @@ package graph
 
 import (
 	"context"
+	"fmt"
 	"log"
 
 	"github.com/yigitsadic/wotblitz_example/graph/generated"
 	"github.com/yigitsadic/wotblitz_example/graph/model"
 	"github.com/yigitsadic/wotblitz_example/shared"
 )
+
+func (r *queryResolver) FilterTanks(ctx context.Context, country *model.Country, tier *int, tankClass *model.TankClass, isPremium *bool) ([]*model.Tank, error) {
+	panic(fmt.Errorf("not implemented"))
+}
+
+func (r *queryResolver) Search(ctx context.Context, term string) ([]model.SearchResult, error) {
+	var searchResult []model.SearchResult
+
+	searchResult = append(searchResult, model.Module{
+		Type: model.ModuleTypeSuspension,
+		Name: "Tracks",
+	})
+
+	searchResult = append(searchResult, model.Tank{
+		ID:        3,
+		Name:      "Tiger II",
+		Tier:      8,
+		IsPremium: false,
+		TankClass: model.TankClassHeavyTank,
+		Country:   model.CountryGermany,
+	})
+
+	return searchResult, nil
+}
 
 func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
 	var tanks []*model.Tank

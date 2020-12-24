@@ -6,6 +6,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -50,9 +51,11 @@ type ComplexityRoot struct {
 	}
 
 	Query struct {
-		Tank     func(childComplexity int, name string) int
-		Tanks    func(childComplexity int) int
-		TechTree func(childComplexity int, country model.Country) int
+		FilterTanks func(childComplexity int, country *model.Country, tier *int, tankClass *model.TankClass, isPremium *bool) int
+		Search      func(childComplexity int, term string) int
+		Tank        func(childComplexity int, name string) int
+		Tanks       func(childComplexity int) int
+		TechTree    func(childComplexity int, country model.Country) int
 	}
 
 	Tank struct {
@@ -68,6 +71,8 @@ type ComplexityRoot struct {
 }
 
 type QueryResolver interface {
+	FilterTanks(ctx context.Context, country *model.Country, tier *int, tankClass *model.TankClass, isPremium *bool) ([]*model.Tank, error)
+	Search(ctx context.Context, term string) ([]model.SearchResult, error)
 	Tanks(ctx context.Context) ([]*model.Tank, error)
 	Tank(ctx context.Context, name string) (*model.Tank, error)
 	TechTree(ctx context.Context, country model.Country) ([]*model.Tank, error)
@@ -111,6 +116,30 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Module.Type(childComplexity), true
+
+	case "Query.filterTanks":
+		if e.complexity.Query.FilterTanks == nil {
+			break
+		}
+
+		args, err := ec.field_Query_filterTanks_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.FilterTanks(childComplexity, args["country"].(*model.Country), args["tier"].(*int), args["tankClass"].(*model.TankClass), args["isPremium"].(*bool)), true
+
+	case "Query.search":
+		if e.complexity.Query.Search == nil {
+			break
+		}
+
+		args, err := ec.field_Query_search_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Query.Search(childComplexity, args["term"].(string)), true
 
 	case "Query.tank":
 		if e.complexity.Query.Tank == nil {
@@ -266,6 +295,8 @@ type Module {
   followings: [Module]
 }
 
+union SearchResult = Tank | Module
+
 enum Country {
   USA
   Germany
@@ -292,6 +323,9 @@ enum TankClass {
 }
 
 type Query {
+  filterTanks(country: Country, tier: Int, tankClass: TankClass, isPremium: Boolean): [Tank]
+  search(term: String!): [SearchResult]
+
   tanks: [Tank]
   tank(name: String!): Tank
 
@@ -317,6 +351,63 @@ func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs
 		}
 	}
 	args["name"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_filterTanks_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *model.Country
+	if tmp, ok := rawArgs["country"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("country"))
+		arg0, err = ec.unmarshalOCountry2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐCountry(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["country"] = arg0
+	var arg1 *int
+	if tmp, ok := rawArgs["tier"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tier"))
+		arg1, err = ec.unmarshalOInt2ᚖint(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tier"] = arg1
+	var arg2 *model.TankClass
+	if tmp, ok := rawArgs["tankClass"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("tankClass"))
+		arg2, err = ec.unmarshalOTankClass2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐTankClass(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["tankClass"] = arg2
+	var arg3 *bool
+	if tmp, ok := rawArgs["isPremium"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isPremium"))
+		arg3, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["isPremium"] = arg3
+	return args, nil
+}
+
+func (ec *executionContext) field_Query_search_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 string
+	if tmp, ok := rawArgs["term"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("term"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["term"] = arg0
 	return args, nil
 }
 
@@ -488,6 +579,84 @@ func (ec *executionContext) _Module_followings(ctx context.Context, field graphq
 	res := resTmp.([]*model.Module)
 	fc.Result = res
 	return ec.marshalOModule2ᚕᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐModule(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_filterTanks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_filterTanks_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().FilterTanks(rctx, args["country"].(*model.Country), args["tier"].(*int), args["tankClass"].(*model.TankClass), args["isPremium"].(*bool))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Tank)
+	fc.Result = res
+	return ec.marshalOTank2ᚕᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐTank(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Query_search(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Query",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Query_search_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Query().Search(rctx, args["term"].(string))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]model.SearchResult)
+	fc.Result = res
+	return ec.marshalOSearchResult2ᚕgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐSearchResult(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_tanks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -2036,11 +2205,34 @@ func (ec *executionContext) ___Type_ofType(ctx context.Context, field graphql.Co
 
 // region    ************************** interface.gotpl ***************************
 
+func (ec *executionContext) _SearchResult(ctx context.Context, sel ast.SelectionSet, obj model.SearchResult) graphql.Marshaler {
+	switch obj := (obj).(type) {
+	case nil:
+		return graphql.Null
+	case model.Tank:
+		return ec._Tank(ctx, sel, &obj)
+	case *model.Tank:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Tank(ctx, sel, obj)
+	case model.Module:
+		return ec._Module(ctx, sel, &obj)
+	case *model.Module:
+		if obj == nil {
+			return graphql.Null
+		}
+		return ec._Module(ctx, sel, obj)
+	default:
+		panic(fmt.Errorf("unexpected type %T", obj))
+	}
+}
+
 // endregion ************************** interface.gotpl ***************************
 
 // region    **************************** object.gotpl ****************************
 
-var moduleImplementors = []string{"Module"}
+var moduleImplementors = []string{"Module", "SearchResult"}
 
 func (ec *executionContext) _Module(ctx context.Context, sel ast.SelectionSet, obj *model.Module) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, moduleImplementors)
@@ -2089,6 +2281,28 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Query")
+		case "filterTanks":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_filterTanks(ctx, field)
+				return res
+			})
+		case "search":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Query_search(ctx, field)
+				return res
+			})
 		case "tanks":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -2137,7 +2351,7 @@ func (ec *executionContext) _Query(ctx context.Context, sel ast.SelectionSet) gr
 	return out
 }
 
-var tankImplementors = []string{"Tank"}
+var tankImplementors = []string{"Tank", "SearchResult"}
 
 func (ec *executionContext) _Tank(ctx context.Context, sel ast.SelectionSet, obj *model.Tank) graphql.Marshaler {
 	fields := graphql.CollectFields(ec.OperationContext, sel, tankImplementors)
@@ -2775,6 +2989,37 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return graphql.MarshalBoolean(*v)
 }
 
+func (ec *executionContext) unmarshalOCountry2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐCountry(ctx context.Context, v interface{}) (*model.Country, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.Country)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOCountry2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐCountry(ctx context.Context, sel ast.SelectionSet, v *model.Country) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
+}
+
+func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := graphql.UnmarshalInt(v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOInt2ᚖint(ctx context.Context, sel ast.SelectionSet, v *int) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return graphql.MarshalInt(*v)
+}
+
 func (ec *executionContext) marshalOModule2ᚕᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐModule(ctx context.Context, sel ast.SelectionSet, v []*model.Module) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
@@ -2820,6 +3065,53 @@ func (ec *executionContext) marshalOModule2ᚖgithubᚗcomᚋyigitsadicᚋwotbli
 		return graphql.Null
 	}
 	return ec._Module(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSearchResult2githubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐSearchResult(ctx context.Context, sel ast.SelectionSet, v model.SearchResult) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._SearchResult(ctx, sel, v)
+}
+
+func (ec *executionContext) marshalOSearchResult2ᚕgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐSearchResult(ctx context.Context, sel ast.SelectionSet, v []model.SearchResult) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	ret := make(graphql.Array, len(v))
+	var wg sync.WaitGroup
+	isLen1 := len(v) == 1
+	if !isLen1 {
+		wg.Add(len(v))
+	}
+	for i := range v {
+		i := i
+		fc := &graphql.FieldContext{
+			Index:  &i,
+			Result: &v[i],
+		}
+		ctx := graphql.WithFieldContext(ctx, fc)
+		f := func(i int) {
+			defer func() {
+				if r := recover(); r != nil {
+					ec.Error(ctx, ec.Recover(ctx, r))
+					ret = nil
+				}
+			}()
+			if !isLen1 {
+				defer wg.Done()
+			}
+			ret[i] = ec.marshalOSearchResult2githubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐSearchResult(ctx, sel, v[i])
+		}
+		if isLen1 {
+			f(i)
+		} else {
+			go f(i)
+		}
+
+	}
+	wg.Wait()
+	return ret
 }
 
 func (ec *executionContext) unmarshalOString2string(ctx context.Context, v interface{}) (string, error) {
@@ -2891,6 +3183,22 @@ func (ec *executionContext) marshalOTank2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz
 		return graphql.Null
 	}
 	return ec._Tank(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOTankClass2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐTankClass(ctx context.Context, v interface{}) (*model.TankClass, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.TankClass)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOTankClass2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐTankClass(ctx context.Context, sel ast.SelectionSet, v *model.TankClass) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalO__EnumValue2ᚕgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐEnumValueᚄ(ctx context.Context, sel ast.SelectionSet, v []introspection.EnumValue) graphql.Marshaler {

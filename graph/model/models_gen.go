@@ -8,11 +8,17 @@ import (
 	"strconv"
 )
 
+type SearchResult interface {
+	IsSearchResult()
+}
+
 type Module struct {
 	Type       ModuleType `json:"type"`
 	Name       string     `json:"name"`
 	Followings []*Module  `json:"followings"`
 }
+
+func (Module) IsSearchResult() {}
 
 type Tank struct {
 	ID        int       `json:"id"`
@@ -24,6 +30,8 @@ type Tank struct {
 	TankClass TankClass `json:"tankClass"`
 	Country   Country   `json:"country"`
 }
+
+func (Tank) IsSearchResult() {}
 
 type Country string
 
