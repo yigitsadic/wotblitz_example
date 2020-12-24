@@ -5,41 +5,56 @@ package graph
 
 import (
 	"context"
+	"github.com/yigitsadic/wotblitz_example/shared"
+	"log"
 
 	"github.com/yigitsadic/wotblitz_example/graph/generated"
 	"github.com/yigitsadic/wotblitz_example/graph/model"
 )
 
 func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
-	tanks := []*model.Tank{
-		{
-			Name:      "Tiger II",
-			Tier:      8,
-			IsPremium: false,
-			TankClass: model.TankClassHeavyTank,
-			Country:   model.CountryGermany,
-		},
-		{
-			Name:      "IS-3",
-			Tier:      8,
-			IsPremium: false,
-			TankClass: model.TankClassHeavyTank,
-			Country:   model.CountryUsrr,
-		},
+	var tanks []*model.Tank
+
+	foundTanks, err := r.Repository.FetchAllTanks()
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	for _, tank := range foundTanks {
+
+		tanks = append(tanks, &model.Tank{
+			Name:      tank.Name,
+			Tier:      tank.Tier,
+			IsPremium: tank.IsPremium,
+			TankClass: shared.MapTankClass(tank.TankClass),
+			Country:   shared.MapTankCountry(tank.Country),
+		})
 	}
 
 	return tanks, nil
 }
 
 func (r *queryResolver) TechTree(ctx context.Context, country model.Country) ([]*model.Tank, error) {
-	tanks := []*model.Tank{
-		{
-			Name:      "Tiger II",
-			Tier:      8,
-			IsPremium: false,
-			TankClass: model.TankClassHeavyTank,
-			Country:   model.CountryGermany,
-		},
+	var tanks []*model.Tank
+
+	foundTanks, err := r.Repository.FetchTanksByCountry(country)
+
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	for _, tank := range foundTanks {
+
+		tanks = append(tanks, &model.Tank{
+			Name:      tank.Name,
+			Tier:      tank.Tier,
+			IsPremium: tank.IsPremium,
+			TankClass: shared.MapTankClass(tank.TankClass),
+			Country:   shared.MapTankCountry(tank.Country),
+		})
 	}
 
 	return tanks, nil

@@ -13,22 +13,19 @@ import (
 	"os"
 )
 
-var DbSchema *database.Schema
-
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3700"
 	}
 
-	DbSchema = database.LoadFromFile()
-
-	log.Printf("%d tank(s) found\t%d module(s) found on db. This log is for testing.\n", len(DbSchema.Tanks), len(DbSchema.Modules))
+	schema := database.LoadFromFile()
+	repository := database.NewRepository(schema)
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{}}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{Repository: repository}}))
 
 	r.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	r.Handle("/query", srv)

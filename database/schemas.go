@@ -35,10 +35,10 @@ type TankModuleSchema struct {
 }
 
 type Schema struct {
-	Tanks            []TankSchema            `json:"tanks"`
-	Modules          []ModuleSchema          `json:"modules"`
-	ModuleFollowings []ModuleFollowingSchema `json:"moduleFollowings"`
-	TankModules      []TankModuleSchema      `json:"tankModules"`
+	Tanks            []*TankSchema            `json:"tanks"`
+	Modules          []*ModuleSchema          `json:"modules"`
+	ModuleFollowings []*ModuleFollowingSchema `json:"moduleFollowings"`
+	TankModules      []*TankModuleSchema      `json:"tankModules"`
 }
 
 func ReadFromFile() []byte {
