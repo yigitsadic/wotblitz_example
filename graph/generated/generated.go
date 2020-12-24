@@ -42,9 +42,9 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Module struct {
-		Following func(childComplexity int) int
-		Name      func(childComplexity int) int
-		Type      func(childComplexity int) int
+		Followings func(childComplexity int) int
+		Name       func(childComplexity int) int
+		Type       func(childComplexity int) int
 	}
 
 	Query struct {
@@ -83,12 +83,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "Module.following":
-		if e.complexity.Module.Following == nil {
+	case "Module.followings":
+		if e.complexity.Module.Followings == nil {
 			break
 		}
 
-		return e.complexity.Module.Following(childComplexity), true
+		return e.complexity.Module.Followings(childComplexity), true
 
 	case "Module.name":
 		if e.complexity.Module.Name == nil {
@@ -235,7 +235,7 @@ var sources = []*ast.Source{
 type Module {
   type: ModuleType!
   name: String!
-  following: Module
+  followings: [Module]
 }
 
 enum Country {
@@ -413,7 +413,7 @@ func (ec *executionContext) _Module_name(ctx context.Context, field graphql.Coll
 	return ec.marshalNString2string(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Module_following(ctx context.Context, field graphql.CollectedField, obj *model.Module) (ret graphql.Marshaler) {
+func (ec *executionContext) _Module_followings(ctx context.Context, field graphql.CollectedField, obj *model.Module) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -431,7 +431,7 @@ func (ec *executionContext) _Module_following(ctx context.Context, field graphql
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Following, nil
+		return obj.Followings, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -440,9 +440,9 @@ func (ec *executionContext) _Module_following(ctx context.Context, field graphql
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*model.Module)
+	res := resTmp.([]*model.Module)
 	fc.Result = res
-	return ec.marshalOModule2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐModule(ctx, field.Selections, res)
+	return ec.marshalOModule2ᚕᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐModule(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_tanks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -1942,8 +1942,8 @@ func (ec *executionContext) _Module(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "following":
-			out.Values[i] = ec._Module_following(ctx, field, obj)
+		case "followings":
+			out.Values[i] = ec._Module_followings(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}

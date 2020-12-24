@@ -11,7 +11,7 @@ type Tank {
 type Module {
   type: ModuleType!
   name: String!
-  following: Module
+  followings: [Module]
 }
 
 enum Country {

@@ -9,9 +9,9 @@ import (
 )
 
 type Module struct {
-	Type      ModuleType `json:"type"`
-	Name      string     `json:"name"`
-	Following *Module    `json:"following"`
+	Type       ModuleType `json:"type"`
+	Name       string     `json:"name"`
+	Followings []*Module  `json:"followings"`
 }
 
 type Tank struct {
