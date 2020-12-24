@@ -62,7 +62,7 @@ type ComplexityRoot struct {
 		Country   func(childComplexity int) int
 		ID        func(childComplexity int) int
 		IsPremium func(childComplexity int) int
-		Modules   func(childComplexity int) int
+		Modules   func(childComplexity int, isStock *bool) int
 		Name      func(childComplexity int) int
 		NextTanks func(childComplexity int) int
 		TankClass func(childComplexity int) int
@@ -78,7 +78,7 @@ type QueryResolver interface {
 	TechTree(ctx context.Context, country model.Country) ([]*model.Tank, error)
 }
 type TankResolver interface {
-	Modules(ctx context.Context, obj *model.Tank) ([]*model.Module, error)
+	Modules(ctx context.Context, obj *model.Tank, isStock *bool) ([]*model.Module, error)
 }
 
 type executableSchema struct {
@@ -198,7 +198,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			break
 		}
 
-		return e.complexity.Tank.Modules(childComplexity), true
+		args, err := ec.field_Tank_modules_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Tank.Modules(childComplexity, args["isStock"].(*bool)), true
 
 	case "Tank.name":
 		if e.complexity.Tank.Name == nil {
@@ -283,7 +288,7 @@ var sources = []*ast.Source{
   name: String!
   tier: Int!
   nextTanks: [Tank]
-  modules: [Module]
+  modules(isStock: Boolean = True): [Module]
   isPremium: Boolean!
   tankClass: TankClass!
   country: Country!
@@ -438,6 +443,21 @@ func (ec *executionContext) field_Query_techTree_args(ctx context.Context, rawAr
 		}
 	}
 	args["country"] = arg0
+	return args, nil
+}
+
+func (ec *executionContext) field_Tank_modules_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *bool
+	if tmp, ok := rawArgs["isStock"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isStock"))
+		arg0, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["isStock"] = arg0
 	return args, nil
 }
 
@@ -993,9 +1013,16 @@ func (ec *executionContext) _Tank_modules(ctx context.Context, field graphql.Col
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
+	rawArgs := field.ArgumentMap(ec.Variables)
+	args, err := ec.field_Tank_modules_args(ctx, rawArgs)
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tank().Modules(rctx, obj)
+		return ec.resolvers.Tank().Modules(rctx, obj, args["isStock"].(*bool))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

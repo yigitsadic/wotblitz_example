@@ -3,7 +3,7 @@ type Tank {
   name: String!
   tier: Int!
   nextTanks: [Tank]
-  modules: [Module]
+  modules(isStock: Boolean = True): [Module]
   isPremium: Boolean!
   tankClass: TankClass!
   country: Country!

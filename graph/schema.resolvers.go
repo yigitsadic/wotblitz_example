@@ -104,7 +104,9 @@ func (r *queryResolver) TechTree(ctx context.Context, country model.Country) ([]
 	return tanks, nil
 }
 
-func (r *tankResolver) Modules(ctx context.Context, obj *model.Tank) ([]*model.Module, error) {
+func (r *tankResolver) Modules(ctx context.Context, obj *model.Tank, isStock *bool) ([]*model.Module, error) {
+	// TODO: Implement is stock search.
+
 	var modules []*model.Module
 	foundModules, err := r.Repository.FetchModulesForTank(obj.ID)
 	if err != nil {
