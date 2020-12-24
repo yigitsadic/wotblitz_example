@@ -1,0 +1,94 @@
+{
+  "tanks": [
+    {
+      "id": 1,
+      "name": "R35",
+      "tier": 1,
+      "isPremium": false,
+      "tankClass": "medium",
+      "country": "france"
+    }
+  ],
+  "modules": [
+    {
+      "id": 1,
+      "name": "APX SA18",
+      "type": "gun"
+    },
+    {
+      "id": 2,
+      "name": "APX-R",
+      "type": "turret"
+    },
+    {
+      "id": 3,
+      "name": "Renault V4",
+      "type": "engine"
+    },
+    {
+      "id": 4,
+      "name": "APX-R1",
+      "type": "turret"
+    },
+    {
+      "id": 5,
+      "name": "SA38",
+      "type": "gun"
+    },
+    {
+      "id": 6,
+      "name": "Renault R35",
+      "type": "suspension"
+    }
+  ],
+  "moduleFollowings": [
+    {
+      "id": 1,
+      "moduleId": 2,
+      "followingModuleId": 4
+    },
+    {
+      "id": 2,
+      "moduleId": 4,
+      "followingModuleId": 5
+    }
+  ],
+  "tankModules": [
+    {
+      "id": 1,
+      "tankId": 1,
+      "moduleId": 1,
+      "isStock": true
+    },
+    {
+      "id": 2,
+      "tankId": 1,
+      "moduleId": 2,
+      "isStock": true
+    },
+    {
+      "id": 3,
+      "tankId": 1,
+      "moduleId": 3,
+      "isStock": true
+    },
+    {
+      "id": 4,
+      "tankId": 1,
+      "moduleId": 6,
+      "isStock": true
+    },
+    {
+      "id": 5,
+      "tankId": 1,
+      "moduleId": 4,
+      "isStock": false
+    },
+    {
+      "id": 6,
+      "tankId": 1,
+      "moduleId": 5,
+      "isStock": false
+    }
+  ]
+}

@@ -15,13 +15,13 @@ type Module struct {
 }
 
 type Tank struct {
-	Name         string    `json:"name"`
-	Tier         int       `json:"tier"`
-	NextTanks    []*Tank   `json:"nextTanks"`
-	StockModules []*Module `json:"stockModules"`
-	IsPremium    bool      `json:"isPremium"`
-	TankClass    TankClass `json:"tankClass"`
-	Country      Country   `json:"country"`
+	Name      string    `json:"name"`
+	Tier      int       `json:"tier"`
+	NextTanks []*Tank   `json:"nextTanks"`
+	Modules   []*Module `json:"modules"`
+	IsPremium bool      `json:"isPremium"`
+	TankClass TankClass `json:"tankClass"`
+	Country   Country   `json:"country"`
 }
 
 type Country string

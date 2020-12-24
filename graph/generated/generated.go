@@ -53,13 +53,13 @@ type ComplexityRoot struct {
 	}
 
 	Tank struct {
-		Country      func(childComplexity int) int
-		IsPremium    func(childComplexity int) int
-		Name         func(childComplexity int) int
-		NextTanks    func(childComplexity int) int
-		StockModules func(childComplexity int) int
-		TankClass    func(childComplexity int) int
-		Tier         func(childComplexity int) int
+		Country   func(childComplexity int) int
+		IsPremium func(childComplexity int) int
+		Modules   func(childComplexity int) int
+		Name      func(childComplexity int) int
+		NextTanks func(childComplexity int) int
+		TankClass func(childComplexity int) int
+		Tier      func(childComplexity int) int
 	}
 }
 
@@ -137,6 +137,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.Tank.IsPremium(childComplexity), true
 
+	case "Tank.modules":
+		if e.complexity.Tank.Modules == nil {
+			break
+		}
+
+		return e.complexity.Tank.Modules(childComplexity), true
+
 	case "Tank.name":
 		if e.complexity.Tank.Name == nil {
 			break
@@ -150,13 +157,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tank.NextTanks(childComplexity), true
-
-	case "Tank.stockModules":
-		if e.complexity.Tank.StockModules == nil {
-			break
-		}
-
-		return e.complexity.Tank.StockModules(childComplexity), true
 
 	case "Tank.tankClass":
 		if e.complexity.Tank.TankClass == nil {
@@ -226,7 +226,7 @@ var sources = []*ast.Source{
   name: String!
   tier: Int!
   nextTanks: [Tank]
-  stockModules: [Module]
+  modules: [Module]
   isPremium: Boolean!
   tankClass: TankClass!
   country: Country!
@@ -689,7 +689,7 @@ func (ec *executionContext) _Tank_nextTanks(ctx context.Context, field graphql.C
 	return ec.marshalOTank2ᚕᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐTank(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) _Tank_stockModules(ctx context.Context, field graphql.CollectedField, obj *model.Tank) (ret graphql.Marshaler) {
+func (ec *executionContext) _Tank_modules(ctx context.Context, field graphql.CollectedField, obj *model.Tank) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
 			ec.Error(ctx, ec.Recover(ctx, r))
@@ -707,7 +707,7 @@ func (ec *executionContext) _Tank_stockModules(ctx context.Context, field graphq
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.StockModules, nil
+		return obj.Modules, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2030,8 +2030,8 @@ func (ec *executionContext) _Tank(ctx context.Context, sel ast.SelectionSet, obj
 			}
 		case "nextTanks":
 			out.Values[i] = ec._Tank_nextTanks(ctx, field, obj)
-		case "stockModules":
-			out.Values[i] = ec._Tank_stockModules(ctx, field, obj)
+		case "modules":
+			out.Values[i] = ec._Tank_modules(ctx, field, obj)
 		case "isPremium":
 			out.Values[i] = ec._Tank_isPremium(ctx, field, obj)
 			if out.Values[i] == graphql.Null {

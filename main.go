@@ -5,6 +5,7 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	"github.com/yigitsadic/wotblitz_example/database"
 	"github.com/yigitsadic/wotblitz_example/graph"
 	"github.com/yigitsadic/wotblitz_example/graph/generated"
 	"log"
@@ -12,11 +13,17 @@ import (
 	"os"
 )
 
+var DbSchema *database.Schema
+
 func main() {
 	port := os.Getenv("PORT")
 	if port == "" {
 		port = "3700"
 	}
+
+	DbSchema = database.LoadFromFile()
+
+	log.Printf("%d tank(s) found\t%d module(s) found on db. This log is for testing.\n", len(DbSchema.Tanks), len(DbSchema.Modules))
 
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
