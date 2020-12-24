@@ -25,6 +25,7 @@ func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
 	for _, tank := range foundTanks {
 
 		tanks = append(tanks, &model.Tank{
+			ID:        tank.Id,
 			Name:      tank.Name,
 			Tier:      tank.Tier,
 			IsPremium: tank.IsPremium,
@@ -44,6 +45,7 @@ func (r *queryResolver) Tank(ctx context.Context, name string) (*model.Tank, err
 	}
 
 	return &model.Tank{
+		ID:        tank.Id,
 		Name:      tank.Name,
 		Tier:      tank.Tier,
 		IsPremium: tank.IsPremium,
@@ -65,6 +67,7 @@ func (r *queryResolver) TechTree(ctx context.Context, country model.Country) ([]
 	for _, tank := range foundTanks {
 
 		tanks = append(tanks, &model.Tank{
+			ID:        tank.Id,
 			Name:      tank.Name,
 			Tier:      tank.Tier,
 			IsPremium: tank.IsPremium,
@@ -76,7 +79,28 @@ func (r *queryResolver) TechTree(ctx context.Context, country model.Country) ([]
 	return tanks, nil
 }
 
+func (r *tankResolver) Modules(ctx context.Context, obj *model.Tank) ([]*model.Module, error) {
+	var modules []*model.Module
+	foundModules, err := r.Repository.FetchModulesForTank(obj.ID)
+	if err != nil {
+		return nil, nil
+	}
+
+	for _, m := range foundModules {
+		modules = append(modules, &model.Module{
+			Type: shared.MapModuleType(m.Type),
+			Name: m.Name,
+		})
+	}
+
+	return modules, nil
+}
+
 // Query returns generated.QueryResolver implementation.
 func (r *Resolver) Query() generated.QueryResolver { return &queryResolver{r} }
 
+// Tank returns generated.TankResolver implementation.
+func (r *Resolver) Tank() generated.TankResolver { return &tankResolver{r} }
+
 type queryResolver struct{ *Resolver }
+type tankResolver struct{ *Resolver }

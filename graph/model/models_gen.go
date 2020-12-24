@@ -15,6 +15,7 @@ type Module struct {
 }
 
 type Tank struct {
+	ID        int       `json:"id"`
 	Name      string    `json:"name"`
 	Tier      int       `json:"tier"`
 	NextTanks []*Tank   `json:"nextTanks"`

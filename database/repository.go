@@ -58,6 +58,19 @@ func (r *Repository) FetchNextTanks(tankId int) ([]*TankSchema, error) {
 	return nil, nil
 }
 
+// Fetches modules for given tank id.
 func (r *Repository) FetchModulesForTank(tankId int) ([]*ModuleSchema, error) {
-	return nil, nil
+	var foundModules []*ModuleSchema
+
+	for _, m := range r.Schema.TankModules {
+		if m.TankId == tankId {
+			for _, mm := range r.Schema.Modules {
+				if m.ModuleId == mm.Id {
+					foundModules = append(foundModules, mm)
+				}
+			}
+		}
+	}
+
+	return foundModules, nil
 }

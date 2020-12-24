@@ -8,6 +8,7 @@ import (
 	"errors"
 	"strconv"
 	"sync"
+	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
@@ -35,6 +36,7 @@ type Config struct {
 
 type ResolverRoot interface {
 	Query() QueryResolver
+	Tank() TankResolver
 }
 
 type DirectiveRoot struct {
@@ -55,6 +57,7 @@ type ComplexityRoot struct {
 
 	Tank struct {
 		Country   func(childComplexity int) int
+		ID        func(childComplexity int) int
 		IsPremium func(childComplexity int) int
 		Modules   func(childComplexity int) int
 		Name      func(childComplexity int) int
@@ -68,6 +71,9 @@ type QueryResolver interface {
 	Tanks(ctx context.Context) ([]*model.Tank, error)
 	Tank(ctx context.Context, name string) (*model.Tank, error)
 	TechTree(ctx context.Context, country model.Country) ([]*model.Tank, error)
+}
+type TankResolver interface {
+	Modules(ctx context.Context, obj *model.Tank) ([]*model.Module, error)
 }
 
 type executableSchema struct {
@@ -143,6 +149,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tank.Country(childComplexity), true
+
+	case "Tank.id":
+		if e.complexity.Tank.ID == nil {
+			break
+		}
+
+		return e.complexity.Tank.ID(childComplexity), true
 
 	case "Tank.isPremium":
 		if e.complexity.Tank.IsPremium == nil {
@@ -237,6 +250,7 @@ func (ec *executionContext) introspectType(name string) (*introspection.Type, er
 
 var sources = []*ast.Source{
 	{Name: "graph/schema.graphqls", Input: `type Tank {
+  id: Int!
   name: String!
   tier: Int!
   nextTanks: [Tank]
@@ -657,6 +671,41 @@ func (ec *executionContext) _Query___schema(ctx context.Context, field graphql.C
 	return ec.marshalO__Schema2ᚖgithubᚗcomᚋ99designsᚋgqlgenᚋgraphqlᚋintrospectionᚐSchema(ctx, field.Selections, res)
 }
 
+func (ec *executionContext) _Tank_id(ctx context.Context, field graphql.CollectedField, obj *model.Tank) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tank",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   false,
+		IsResolver: false,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.ID, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		if !graphql.HasFieldError(ctx, fc) {
+			ec.Errorf(ctx, "must not be null")
+		}
+		return graphql.Null
+	}
+	res := resTmp.(int)
+	fc.Result = res
+	return ec.marshalNInt2int(ctx, field.Selections, res)
+}
+
 func (ec *executionContext) _Tank_name(ctx context.Context, field graphql.CollectedField, obj *model.Tank) (ret graphql.Marshaler) {
 	defer func() {
 		if r := recover(); r != nil {
@@ -770,14 +819,14 @@ func (ec *executionContext) _Tank_modules(ctx context.Context, field graphql.Col
 		Object:     "Tank",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Modules, nil
+		return ec.resolvers.Tank().Modules(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2099,34 +2148,48 @@ func (ec *executionContext) _Tank(ctx context.Context, sel ast.SelectionSet, obj
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("Tank")
+		case "id":
+			out.Values[i] = ec._Tank_id(ctx, field, obj)
+			if out.Values[i] == graphql.Null {
+				atomic.AddUint32(&invalids, 1)
+			}
 		case "name":
 			out.Values[i] = ec._Tank_name(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "tier":
 			out.Values[i] = ec._Tank_tier(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "nextTanks":
 			out.Values[i] = ec._Tank_nextTanks(ctx, field, obj)
 		case "modules":
-			out.Values[i] = ec._Tank_modules(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tank_modules(ctx, field, obj)
+				return res
+			})
 		case "isPremium":
 			out.Values[i] = ec._Tank_isPremium(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "tankClass":
 			out.Values[i] = ec._Tank_tankClass(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		case "country":
 			out.Values[i] = ec._Tank_country(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
-				invalids++
+				atomic.AddUint32(&invalids, 1)
 			}
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))

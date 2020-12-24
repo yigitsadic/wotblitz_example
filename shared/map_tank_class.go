@@ -41,3 +41,20 @@ func MapTankCountry(tankCountryFromDb string) model.Country {
 
 	return country
 }
+
+func MapModuleType(typeFromDb string) model.ModuleType {
+	var moduleType model.ModuleType
+
+	switch typeFromDb {
+	case "turret":
+		moduleType = model.ModuleTypeTurret
+	case "gun":
+		moduleType = model.ModuleTypeGun
+	case "engine":
+		moduleType = model.ModuleTypeEngine
+	case "suspension":
+		moduleType = model.ModuleTypeSuspension
+	}
+
+	return moduleType
+}

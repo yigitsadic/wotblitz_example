@@ -1,4 +1,5 @@
 type Tank {
+  id: Int!
   name: String!
   tier: Int!
   nextTanks: [Tank]
