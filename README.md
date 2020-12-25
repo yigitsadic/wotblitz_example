@@ -15,23 +15,31 @@ https://guarded-savannah-12730.herokuapp.com
 Tank details
 ```graphql
 query {
-  tank(name: "R35") {
-    name
-    isPremium
-    tier
-    country
-    tankClass
+    tank(name: "AMX 38") {
+        name
+        isPremium
+        tier
+        country
+        tankClass
 
-    stockModules: modules(isStock: true) {
-      type
-      name
-    }
+        nextTanks {
+            name
+        }
 
-    upgrableModules: modules(isStock: false) {
-      type
-      name
+        previousTanks {
+            name
+        }
+
+        stockModules: modules(status: Stock) {
+            type
+            name
+        }
+
+        upgradeModules: modules(status: Upgrade) {
+            type
+            name
+        }
     }
-  }
 }
 ```
 
@@ -72,6 +80,18 @@ query {
         isPremium
         tier
         tankClass
+        modules {
+            name
+            type
+        }
+
+        nextTanks {
+            name
+        }
+
+        previousTanks {
+            name
+        }
     }
 }
 ```

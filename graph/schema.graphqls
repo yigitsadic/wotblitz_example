@@ -3,7 +3,8 @@ type Tank {
   name: String!
   tier: Int!
   nextTanks: [Tank]
-  modules(isStock: Boolean = True): [Module]
+  previousTanks: [Tank]
+  modules(status: ModuleFilter = All): [Module]
   isPremium: Boolean!
   tankClass: TankClass!
   country: Country!
@@ -12,7 +13,6 @@ type Tank {
 type Module {
   type: ModuleType!
   name: String!
-  followings: [Module]
 }
 
 union SearchResult = Tank | Module
@@ -40,6 +40,12 @@ enum TankClass {
   LightTank
   MediumTank
   HeavyTank
+}
+
+enum ModuleFilter {
+  Stock
+  Upgrade
+  All
 }
 
 type Query {

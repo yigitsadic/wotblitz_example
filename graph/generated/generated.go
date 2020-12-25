@@ -45,9 +45,8 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	Module struct {
-		Followings func(childComplexity int) int
-		Name       func(childComplexity int) int
-		Type       func(childComplexity int) int
+		Name func(childComplexity int) int
+		Type func(childComplexity int) int
 	}
 
 	Query struct {
@@ -59,14 +58,15 @@ type ComplexityRoot struct {
 	}
 
 	Tank struct {
-		Country   func(childComplexity int) int
-		ID        func(childComplexity int) int
-		IsPremium func(childComplexity int) int
-		Modules   func(childComplexity int, isStock *bool) int
-		Name      func(childComplexity int) int
-		NextTanks func(childComplexity int) int
-		TankClass func(childComplexity int) int
-		Tier      func(childComplexity int) int
+		Country       func(childComplexity int) int
+		ID            func(childComplexity int) int
+		IsPremium     func(childComplexity int) int
+		Modules       func(childComplexity int, status *model.ModuleFilter) int
+		Name          func(childComplexity int) int
+		NextTanks     func(childComplexity int) int
+		PreviousTanks func(childComplexity int) int
+		TankClass     func(childComplexity int) int
+		Tier          func(childComplexity int) int
 	}
 }
 
@@ -78,7 +78,9 @@ type QueryResolver interface {
 	TechTree(ctx context.Context, country model.Country) ([]*model.Tank, error)
 }
 type TankResolver interface {
-	Modules(ctx context.Context, obj *model.Tank, isStock *bool) ([]*model.Module, error)
+	NextTanks(ctx context.Context, obj *model.Tank) ([]*model.Tank, error)
+	PreviousTanks(ctx context.Context, obj *model.Tank) ([]*model.Tank, error)
+	Modules(ctx context.Context, obj *model.Tank, status *model.ModuleFilter) ([]*model.Module, error)
 }
 
 type executableSchema struct {
@@ -95,13 +97,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	ec := executionContext{nil, e}
 	_ = ec
 	switch typeName + "." + field {
-
-	case "Module.followings":
-		if e.complexity.Module.Followings == nil {
-			break
-		}
-
-		return e.complexity.Module.Followings(childComplexity), true
 
 	case "Module.name":
 		if e.complexity.Module.Name == nil {
@@ -203,7 +198,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Tank.Modules(childComplexity, args["isStock"].(*bool)), true
+		return e.complexity.Tank.Modules(childComplexity, args["status"].(*model.ModuleFilter)), true
 
 	case "Tank.name":
 		if e.complexity.Tank.Name == nil {
@@ -218,6 +213,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Tank.NextTanks(childComplexity), true
+
+	case "Tank.previousTanks":
+		if e.complexity.Tank.PreviousTanks == nil {
+			break
+		}
+
+		return e.complexity.Tank.PreviousTanks(childComplexity), true
 
 	case "Tank.tankClass":
 		if e.complexity.Tank.TankClass == nil {
@@ -288,7 +290,8 @@ var sources = []*ast.Source{
   name: String!
   tier: Int!
   nextTanks: [Tank]
-  modules(isStock: Boolean = True): [Module]
+  previousTanks: [Tank]
+  modules(status: ModuleFilter = All): [Module]
   isPremium: Boolean!
   tankClass: TankClass!
   country: Country!
@@ -297,7 +300,6 @@ var sources = []*ast.Source{
 type Module {
   type: ModuleType!
   name: String!
-  followings: [Module]
 }
 
 union SearchResult = Tank | Module
@@ -325,6 +327,12 @@ enum TankClass {
   LightTank
   MediumTank
   HeavyTank
+}
+
+enum ModuleFilter {
+  Stock
+  Upgrade
+  All
 }
 
 type Query {
@@ -449,15 +457,15 @@ func (ec *executionContext) field_Query_techTree_args(ctx context.Context, rawAr
 func (ec *executionContext) field_Tank_modules_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 *bool
-	if tmp, ok := rawArgs["isStock"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("isStock"))
-		arg0, err = ec.unmarshalOBoolean2ᚖbool(ctx, tmp)
+	var arg0 *model.ModuleFilter
+	if tmp, ok := rawArgs["status"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("status"))
+		arg0, err = ec.unmarshalOModuleFilter2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐModuleFilter(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["isStock"] = arg0
+	args["status"] = arg0
 	return args, nil
 }
 
@@ -567,38 +575,6 @@ func (ec *executionContext) _Module_name(ctx context.Context, field graphql.Coll
 	res := resTmp.(string)
 	fc.Result = res
 	return ec.marshalNString2string(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) _Module_followings(ctx context.Context, field graphql.CollectedField, obj *model.Module) (ret graphql.Marshaler) {
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	fc := &graphql.FieldContext{
-		Object:     "Module",
-		Field:      field,
-		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
-	}
-
-	ctx = graphql.WithFieldContext(ctx, fc)
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Followings, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.([]*model.Module)
-	fc.Result = res
-	return ec.marshalOModule2ᚕᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐModule(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) _Query_filterTanks(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
@@ -976,14 +952,46 @@ func (ec *executionContext) _Tank_nextTanks(ctx context.Context, field graphql.C
 		Object:     "Tank",
 		Field:      field,
 		Args:       nil,
-		IsMethod:   false,
-		IsResolver: false,
+		IsMethod:   true,
+		IsResolver: true,
 	}
 
 	ctx = graphql.WithFieldContext(ctx, fc)
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.NextTanks, nil
+		return ec.resolvers.Tank().NextTanks(rctx, obj)
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.([]*model.Tank)
+	fc.Result = res
+	return ec.marshalOTank2ᚕᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐTank(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) _Tank_previousTanks(ctx context.Context, field graphql.CollectedField, obj *model.Tank) (ret graphql.Marshaler) {
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	fc := &graphql.FieldContext{
+		Object:     "Tank",
+		Field:      field,
+		Args:       nil,
+		IsMethod:   true,
+		IsResolver: true,
+	}
+
+	ctx = graphql.WithFieldContext(ctx, fc)
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Tank().PreviousTanks(rctx, obj)
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1022,7 +1030,7 @@ func (ec *executionContext) _Tank_modules(ctx context.Context, field graphql.Col
 	fc.Args = args
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Tank().Modules(rctx, obj, args["isStock"].(*bool))
+		return ec.resolvers.Tank().Modules(rctx, obj, args["status"].(*model.ModuleFilter))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -2280,8 +2288,6 @@ func (ec *executionContext) _Module(ctx context.Context, sel ast.SelectionSet, o
 			if out.Values[i] == graphql.Null {
 				invalids++
 			}
-		case "followings":
-			out.Values[i] = ec._Module_followings(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2405,7 +2411,27 @@ func (ec *executionContext) _Tank(ctx context.Context, sel ast.SelectionSet, obj
 				atomic.AddUint32(&invalids, 1)
 			}
 		case "nextTanks":
-			out.Values[i] = ec._Tank_nextTanks(ctx, field, obj)
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tank_nextTanks(ctx, field, obj)
+				return res
+			})
+		case "previousTanks":
+			field := field
+			out.Concurrently(i, func() (res graphql.Marshaler) {
+				defer func() {
+					if r := recover(); r != nil {
+						ec.Error(ctx, ec.Recover(ctx, r))
+					}
+				}()
+				res = ec._Tank_previousTanks(ctx, field, obj)
+				return res
+			})
 		case "modules":
 			field := field
 			out.Concurrently(i, func() (res graphql.Marshaler) {
@@ -3092,6 +3118,22 @@ func (ec *executionContext) marshalOModule2ᚖgithubᚗcomᚋyigitsadicᚋwotbli
 		return graphql.Null
 	}
 	return ec._Module(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOModuleFilter2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐModuleFilter(ctx context.Context, v interface{}) (*model.ModuleFilter, error) {
+	if v == nil {
+		return nil, nil
+	}
+	var res = new(model.ModuleFilter)
+	err := res.UnmarshalGQL(v)
+	return res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOModuleFilter2ᚖgithubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐModuleFilter(ctx context.Context, sel ast.SelectionSet, v *model.ModuleFilter) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return v
 }
 
 func (ec *executionContext) marshalOSearchResult2githubᚗcomᚋyigitsadicᚋwotblitz_exampleᚋgraphᚋmodelᚐSearchResult(ctx context.Context, sel ast.SelectionSet, v model.SearchResult) graphql.Marshaler {

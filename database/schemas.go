@@ -16,15 +16,22 @@ type TankSchema struct {
 }
 
 type ModuleSchema struct {
-	Id   int    `json:"id"`
-	Name string `json:"name"`
-	Type string `json:"type"`
+	Id      int    `json:"id"`
+	Name    string `json:"name"`
+	Type    string `json:"type"`
+	IsStock bool   `json:"-"`
 }
 
 type ModuleFollowingSchema struct {
 	Id                int `json:"id"`
 	ModuleId          int `json:"moduleId"`
 	FollowingModuleId int `json:"followingModuleId"`
+}
+
+type TankFollowingSchema struct {
+	Id         int `json:"id"`
+	FromTankId int `json:"fromTankId"`
+	ToTankId   int `json:"toTankId"`
 }
 
 type TankModuleSchema struct {
@@ -39,6 +46,7 @@ type Schema struct {
 	Modules          []*ModuleSchema          `json:"modules"`
 	ModuleFollowings []*ModuleFollowingSchema `json:"moduleFollowings"`
 	TankModules      []*TankModuleSchema      `json:"tankModules"`
+	TankFollowings   []*TankFollowingSchema   `json:"tankFollowings"`
 }
 
 func ReadFromFile() []byte {

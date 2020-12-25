@@ -58,3 +58,7 @@ models:
     fields:
       modules:
         resolver: true
+      previousTanks:
+        resolver: true
+      nextTanks:
+        resolver: true

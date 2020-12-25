@@ -13,22 +13,22 @@ type SearchResult interface {
 }
 
 type Module struct {
-	Type       ModuleType `json:"type"`
-	Name       string     `json:"name"`
-	Followings []*Module  `json:"followings"`
+	Type ModuleType `json:"type"`
+	Name string     `json:"name"`
 }
 
 func (Module) IsSearchResult() {}
 
 type Tank struct {
-	ID        int       `json:"id"`
-	Name      string    `json:"name"`
-	Tier      int       `json:"tier"`
-	NextTanks []*Tank   `json:"nextTanks"`
-	Modules   []*Module `json:"modules"`
-	IsPremium bool      `json:"isPremium"`
-	TankClass TankClass `json:"tankClass"`
-	Country   Country   `json:"country"`
+	ID            int       `json:"id"`
+	Name          string    `json:"name"`
+	Tier          int       `json:"tier"`
+	NextTanks     []*Tank   `json:"nextTanks"`
+	PreviousTanks []*Tank   `json:"previousTanks"`
+	Modules       []*Module `json:"modules"`
+	IsPremium     bool      `json:"isPremium"`
+	TankClass     TankClass `json:"tankClass"`
+	Country       Country   `json:"country"`
 }
 
 func (Tank) IsSearchResult() {}
@@ -83,6 +83,49 @@ func (e *Country) UnmarshalGQL(v interface{}) error {
 }
 
 func (e Country) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
+}
+
+type ModuleFilter string
+
+const (
+	ModuleFilterStock   ModuleFilter = "Stock"
+	ModuleFilterUpgrade ModuleFilter = "Upgrade"
+	ModuleFilterAll     ModuleFilter = "All"
+)
+
+var AllModuleFilter = []ModuleFilter{
+	ModuleFilterStock,
+	ModuleFilterUpgrade,
+	ModuleFilterAll,
+}
+
+func (e ModuleFilter) IsValid() bool {
+	switch e {
+	case ModuleFilterStock, ModuleFilterUpgrade, ModuleFilterAll:
+		return true
+	}
+	return false
+}
+
+func (e ModuleFilter) String() string {
+	return string(e)
+}
+
+func (e *ModuleFilter) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = ModuleFilter(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid ModuleFilter", str)
+	}
+	return nil
+}
+
+func (e ModuleFilter) MarshalGQL(w io.Writer) {
 	fmt.Fprint(w, strconv.Quote(e.String()))
 }
 

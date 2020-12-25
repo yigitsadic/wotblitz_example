@@ -5,34 +5,66 @@ package graph
 
 import (
 	"context"
-	"fmt"
 	"log"
 
+	"github.com/yigitsadic/wotblitz_example/database"
 	"github.com/yigitsadic/wotblitz_example/graph/generated"
 	"github.com/yigitsadic/wotblitz_example/graph/model"
 	"github.com/yigitsadic/wotblitz_example/shared"
 )
 
 func (r *queryResolver) FilterTanks(ctx context.Context, country *model.Country, tier *int, tankClass *model.TankClass, isPremium *bool) ([]*model.Tank, error) {
-	panic(fmt.Errorf("not implemented"))
+	if country != nil {
+		log.Println(*country)
+	}
+
+	if tier != nil {
+		log.Println(*tier)
+	}
+
+	if tankClass != nil {
+		log.Println(*tankClass)
+	}
+
+	if isPremium != nil {
+		log.Println(*isPremium)
+	}
+
+	return nil, nil
 }
 
 func (r *queryResolver) Search(ctx context.Context, term string) ([]model.SearchResult, error) {
 	var searchResult []model.SearchResult
 
-	searchResult = append(searchResult, model.Module{
-		Type: model.ModuleTypeSuspension,
-		Name: "Tracks",
-	})
+	foundTanks, err := r.Repository.SearchInTanks(term)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
 
-	searchResult = append(searchResult, model.Tank{
-		ID:        3,
-		Name:      "Tiger II",
-		Tier:      8,
-		IsPremium: false,
-		TankClass: model.TankClassHeavyTank,
-		Country:   model.CountryGermany,
-	})
+	for _, tank := range foundTanks {
+		searchResult = append(searchResult, model.Tank{
+			ID:        tank.Id,
+			Name:      tank.Name,
+			Tier:      tank.Tier,
+			IsPremium: tank.IsPremium,
+			TankClass: shared.MapTankClass(tank.TankClass),
+			Country:   shared.MapTankCountry(tank.Country),
+		})
+	}
+
+	foundModules, err := r.Repository.SearchInModules(term)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	for _, module := range foundModules {
+		searchResult = append(searchResult, model.Module{
+			Type: shared.MapModuleType(module.Type),
+			Name: module.Name,
+		})
+	}
 
 	return searchResult, nil
 }
@@ -104,11 +136,67 @@ func (r *queryResolver) TechTree(ctx context.Context, country model.Country) ([]
 	return tanks, nil
 }
 
-func (r *tankResolver) Modules(ctx context.Context, obj *model.Tank, isStock *bool) ([]*model.Module, error) {
-	// TODO: Implement is stock search.
+func (r *tankResolver) NextTanks(ctx context.Context, obj *model.Tank) ([]*model.Tank, error) {
+	var tanks []*model.Tank
+	foundTanks, err := r.Repository.FetchNextTanks(obj.ID)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
 
+	for _, tank := range foundTanks {
+
+		tanks = append(tanks, &model.Tank{
+			ID:        tank.Id,
+			Name:      tank.Name,
+			Tier:      tank.Tier,
+			IsPremium: tank.IsPremium,
+			TankClass: shared.MapTankClass(tank.TankClass),
+			Country:   shared.MapTankCountry(tank.Country),
+		})
+	}
+
+	return tanks, nil
+}
+
+func (r *tankResolver) PreviousTanks(ctx context.Context, obj *model.Tank) ([]*model.Tank, error) {
+	var tanks []*model.Tank
+	foundTanks, err := r.Repository.FetchPreviousTanks(obj.ID)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	for _, tank := range foundTanks {
+
+		tanks = append(tanks, &model.Tank{
+			ID:        tank.Id,
+			Name:      tank.Name,
+			Tier:      tank.Tier,
+			IsPremium: tank.IsPremium,
+			TankClass: shared.MapTankClass(tank.TankClass),
+			Country:   shared.MapTankCountry(tank.Country),
+		})
+	}
+
+	return tanks, nil
+}
+
+func (r *tankResolver) Modules(ctx context.Context, obj *model.Tank, status *model.ModuleFilter) ([]*model.Module, error) {
 	var modules []*model.Module
-	foundModules, err := r.Repository.FetchModulesForTank(obj.ID)
+	var err error
+	var foundModules []*database.ModuleSchema
+
+	if status == nil {
+		foundModules, err = r.Repository.FetchModulesForTank(obj.ID)
+	} else if *status == model.ModuleFilterStock {
+		foundModules, err = r.Repository.FetchStockModulesForTank(obj.ID)
+	} else if *status == model.ModuleFilterUpgrade {
+		foundModules, err = r.Repository.FetchUpgradeModulesForTank(obj.ID)
+	} else {
+		foundModules, err = r.Repository.FetchModulesForTank(obj.ID)
+	}
+
 	if err != nil {
 		return nil, nil
 	}
