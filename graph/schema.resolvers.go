@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	tank2 "github.com/yigitsadic/wotblitz_example/ent/tank"
 	"log"
 
 	"github.com/yigitsadic/wotblitz_example/database"
@@ -94,19 +95,20 @@ func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
 }
 
 func (r *queryResolver) Tank(ctx context.Context, name string) (*model.Tank, error) {
-	tank, err := r.Repository.FetchTankByName(name)
+	tank, err := r.Client.Tank.Query().Where(tank2.Name(name)).First(ctx)
+
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
 	return &model.Tank{
-		ID:        tank.Id,
+		ID:        tank.ID,
 		Name:      tank.Name,
 		Tier:      tank.Tier,
 		IsPremium: tank.IsPremium,
-		TankClass: shared.MapTankClass(tank.TankClass),
-		Country:   shared.MapTankCountry(tank.Country),
+		TankClass: model.TankClass(tank.TankClass),
+		Country:   model.Country(tank.Country),
 	}, nil
 }
 
