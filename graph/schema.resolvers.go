@@ -139,21 +139,21 @@ func (r *queryResolver) TechTree(ctx context.Context, country model.Country) ([]
 
 func (r *tankResolver) NextTanks(ctx context.Context, obj *model.Tank) ([]*model.Tank, error) {
 	var tanks []*model.Tank
-	foundTanks, err := r.Repository.FetchNextTanks(obj.ID)
+	foundTanks, err := r.Client.Tank.Query().Where(tank2.ID(obj.ID)).QueryNextTanks().All(ctx)
+
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
 	for _, tank := range foundTanks {
-
 		tanks = append(tanks, &model.Tank{
-			ID:        tank.Id,
+			ID:        tank.ID,
 			Name:      tank.Name,
 			Tier:      tank.Tier,
 			IsPremium: tank.IsPremium,
-			TankClass: shared.MapTankClass(tank.TankClass),
-			Country:   shared.MapTankCountry(tank.Country),
+			TankClass: model.TankClass(tank.TankClass),
+			Country:   model.Country(tank.Country),
 		})
 	}
 
@@ -162,7 +162,8 @@ func (r *tankResolver) NextTanks(ctx context.Context, obj *model.Tank) ([]*model
 
 func (r *tankResolver) PreviousTanks(ctx context.Context, obj *model.Tank) ([]*model.Tank, error) {
 	var tanks []*model.Tank
-	foundTanks, err := r.Repository.FetchPreviousTanks(obj.ID)
+	foundTanks, err := r.Client.Tank.Query().Where(tank2.ID(obj.ID)).QueryPreviousTanks().All(ctx)
+
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -171,12 +172,12 @@ func (r *tankResolver) PreviousTanks(ctx context.Context, obj *model.Tank) ([]*m
 	for _, tank := range foundTanks {
 
 		tanks = append(tanks, &model.Tank{
-			ID:        tank.Id,
+			ID:        tank.ID,
 			Name:      tank.Name,
 			Tier:      tank.Tier,
 			IsPremium: tank.IsPremium,
-			TankClass: shared.MapTankClass(tank.TankClass),
-			Country:   shared.MapTankCountry(tank.Country),
+			TankClass: model.TankClass(tank.TankClass),
+			Country:   model.Country(tank.Country),
 		})
 	}
 
