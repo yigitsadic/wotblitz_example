@@ -4,7 +4,6 @@ import (
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
-	"time"
 )
 
 // Tank holds the schema definition for the Tank entity.
@@ -20,7 +19,6 @@ func (Tank) Fields() []ent.Field {
 		field.Bool("isPremium").Default(false),
 		field.String("tankClass").NotEmpty(),
 		field.String("country").NotEmpty(),
-		field.Time("createdAt").Default(time.Now),
 	}
 }
 

@@ -2,10 +2,6 @@
 
 package module
 
-import (
-	"time"
-)
-
 const (
 	// Label holds the string label denoting the module type in the database.
 	Label = "module"
@@ -15,8 +11,6 @@ const (
 	FieldName = "name"
 	// FieldModuleType holds the string denoting the moduletype field in the database.
 	FieldModuleType = "module_type"
-	// FieldCreatedAt holds the string denoting the createdat field in the database.
-	FieldCreatedAt = "created_at"
 
 	// EdgeTanks holds the string denoting the tanks edge name in mutations.
 	EdgeTanks = "tanks"
@@ -35,7 +29,6 @@ var Columns = []string{
 	FieldID,
 	FieldName,
 	FieldModuleType,
-	FieldCreatedAt,
 }
 
 var (
@@ -59,6 +52,4 @@ var (
 	NameValidator func(string) error
 	// ModuleTypeValidator is a validator for the "moduleType" field. It is called by the builders before save.
 	ModuleTypeValidator func(string) error
-	// DefaultCreatedAt holds the default value on creation for the createdAt field.
-	DefaultCreatedAt func() time.Time
 )

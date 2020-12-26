@@ -5,7 +5,6 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/yigitsadic/wotblitz_example/ent/module"
@@ -20,8 +19,6 @@ type Module struct {
 	Name string `json:"name,omitempty"`
 	// ModuleType holds the value of the "moduleType" field.
 	ModuleType string `json:"moduleType,omitempty"`
-	// CreatedAt holds the value of the "createdAt" field.
-	CreatedAt time.Time `json:"createdAt,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the ModuleQuery when eager-loading is set.
 	Edges ModuleEdges `json:"edges"`
@@ -51,7 +48,6 @@ func (*Module) scanValues() []interface{} {
 		&sql.NullInt64{},  // id
 		&sql.NullString{}, // name
 		&sql.NullString{}, // moduleType
-		&sql.NullTime{},   // createdAt
 	}
 }
 
@@ -76,11 +72,6 @@ func (m *Module) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field moduleType", values[1])
 	} else if value.Valid {
 		m.ModuleType = value.String
-	}
-	if value, ok := values[2].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field createdAt", values[2])
-	} else if value.Valid {
-		m.CreatedAt = value.Time
 	}
 	return nil
 }
@@ -117,8 +108,6 @@ func (m *Module) String() string {
 	builder.WriteString(m.Name)
 	builder.WriteString(", moduleType=")
 	builder.WriteString(m.ModuleType)
-	builder.WriteString(", createdAt=")
-	builder.WriteString(m.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

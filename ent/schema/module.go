@@ -4,7 +4,6 @@ import (
 	"github.com/facebook/ent"
 	"github.com/facebook/ent/schema/edge"
 	"github.com/facebook/ent/schema/field"
-	"time"
 )
 
 // Module holds the schema definition for the Module entity.
@@ -17,7 +16,6 @@ func (Module) Fields() []ent.Field {
 	return []ent.Field{
 		field.String("name").NotEmpty(),
 		field.String("moduleType").NotEmpty(),
-		field.Time("createdAt").Default(time.Now),
 	}
 }
 

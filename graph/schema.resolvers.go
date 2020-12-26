@@ -72,7 +72,7 @@ func (r *queryResolver) Search(ctx context.Context, term string) ([]model.Search
 func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
 	var tanks []*model.Tank
 
-	foundTanks, err := r.Repository.FetchAllTanks()
+	foundTanks, err := r.Client.Tank.Query().All(ctx)
 
 	if err != nil {
 		log.Println(err)
@@ -80,14 +80,13 @@ func (r *queryResolver) Tanks(ctx context.Context) ([]*model.Tank, error) {
 	}
 
 	for _, tank := range foundTanks {
-
 		tanks = append(tanks, &model.Tank{
-			ID:        tank.Id,
+			ID:        tank.ID,
 			Name:      tank.Name,
 			Tier:      tank.Tier,
 			IsPremium: tank.IsPremium,
-			TankClass: shared.MapTankClass(tank.TankClass),
-			Country:   shared.MapTankCountry(tank.Country),
+			TankClass: model.TankClass(tank.TankClass),
+			Country:   model.Country(tank.Country),
 		})
 	}
 

@@ -2,10 +2,6 @@
 
 package tank
 
-import (
-	"time"
-)
-
 const (
 	// Label holds the string label denoting the tank type in the database.
 	Label = "tank"
@@ -21,8 +17,6 @@ const (
 	FieldTankClass = "tank_class"
 	// FieldCountry holds the string denoting the country field in the database.
 	FieldCountry = "country"
-	// FieldCreatedAt holds the string denoting the createdat field in the database.
-	FieldCreatedAt = "created_at"
 
 	// EdgeFromTankId holds the string denoting the fromtankid edge name in mutations.
 	EdgeFromTankId = "fromTankId"
@@ -60,7 +54,6 @@ var Columns = []string{
 	FieldIsPremium,
 	FieldTankClass,
 	FieldCountry,
-	FieldCreatedAt,
 }
 
 var (
@@ -100,6 +93,4 @@ var (
 	TankClassValidator func(string) error
 	// CountryValidator is a validator for the "country" field. It is called by the builders before save.
 	CountryValidator func(string) error
-	// DefaultCreatedAt holds the default value on creation for the createdAt field.
-	DefaultCreatedAt func() time.Time
 )

@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
@@ -30,20 +29,6 @@ func (mc *ModuleCreate) SetName(s string) *ModuleCreate {
 // SetModuleType sets the moduleType field.
 func (mc *ModuleCreate) SetModuleType(s string) *ModuleCreate {
 	mc.mutation.SetModuleType(s)
-	return mc
-}
-
-// SetCreatedAt sets the createdAt field.
-func (mc *ModuleCreate) SetCreatedAt(t time.Time) *ModuleCreate {
-	mc.mutation.SetCreatedAt(t)
-	return mc
-}
-
-// SetNillableCreatedAt sets the createdAt field if the given value is not nil.
-func (mc *ModuleCreate) SetNillableCreatedAt(t *time.Time) *ModuleCreate {
-	if t != nil {
-		mc.SetCreatedAt(*t)
-	}
 	return mc
 }
 
@@ -73,7 +58,6 @@ func (mc *ModuleCreate) Save(ctx context.Context) (*Module, error) {
 		err  error
 		node *Module
 	)
-	mc.defaults()
 	if len(mc.hooks) == 0 {
 		if err = mc.check(); err != nil {
 			return nil, err
@@ -112,14 +96,6 @@ func (mc *ModuleCreate) SaveX(ctx context.Context) *Module {
 	return v
 }
 
-// defaults sets the default values of the builder before save.
-func (mc *ModuleCreate) defaults() {
-	if _, ok := mc.mutation.CreatedAt(); !ok {
-		v := module.DefaultCreatedAt()
-		mc.mutation.SetCreatedAt(v)
-	}
-}
-
 // check runs all checks and user-defined validators on the builder.
 func (mc *ModuleCreate) check() error {
 	if _, ok := mc.mutation.Name(); !ok {
@@ -137,9 +113,6 @@ func (mc *ModuleCreate) check() error {
 		if err := module.ModuleTypeValidator(v); err != nil {
 			return &ValidationError{Name: "moduleType", err: fmt.Errorf("ent: validator failed for field \"moduleType\": %w", err)}
 		}
-	}
-	if _, ok := mc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "createdAt", err: errors.New("ent: missing required field \"createdAt\"")}
 	}
 	return nil
 }
@@ -184,14 +157,6 @@ func (mc *ModuleCreate) createSpec() (*Module, *sqlgraph.CreateSpec) {
 		})
 		_node.ModuleType = value
 	}
-	if value, ok := mc.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: module.FieldCreatedAt,
-		})
-		_node.CreatedAt = value
-	}
 	if nodes := mc.mutation.TanksIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -228,7 +193,6 @@ func (mcb *ModuleCreateBulk) Save(ctx context.Context) ([]*Module, error) {
 	for i := range mcb.builders {
 		func(i int, root context.Context) {
 			builder := mcb.builders[i]
-			builder.defaults()
 			var mut Mutator = MutateFunc(func(ctx context.Context, m Mutation) (Value, error) {
 				mutation, ok := m.(*ModuleMutation)
 				if !ok {

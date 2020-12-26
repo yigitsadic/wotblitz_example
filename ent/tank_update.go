@@ -5,7 +5,6 @@ package ent
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
@@ -70,20 +69,6 @@ func (tu *TankUpdate) SetTankClass(s string) *TankUpdate {
 // SetCountry sets the country field.
 func (tu *TankUpdate) SetCountry(s string) *TankUpdate {
 	tu.mutation.SetCountry(s)
-	return tu
-}
-
-// SetCreatedAt sets the createdAt field.
-func (tu *TankUpdate) SetCreatedAt(t time.Time) *TankUpdate {
-	tu.mutation.SetCreatedAt(t)
-	return tu
-}
-
-// SetNillableCreatedAt sets the createdAt field if the given value is not nil.
-func (tu *TankUpdate) SetNillableCreatedAt(t *time.Time) *TankUpdate {
-	if t != nil {
-		tu.SetCreatedAt(*t)
-	}
 	return tu
 }
 
@@ -407,13 +392,6 @@ func (tu *TankUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Type:   field.TypeString,
 			Value:  value,
 			Column: tank.FieldCountry,
-		})
-	}
-	if value, ok := tu.mutation.CreatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: tank.FieldCreatedAt,
 		})
 	}
 	if tu.mutation.FromTankIdCleared() {
@@ -749,20 +727,6 @@ func (tuo *TankUpdateOne) SetCountry(s string) *TankUpdateOne {
 	return tuo
 }
 
-// SetCreatedAt sets the createdAt field.
-func (tuo *TankUpdateOne) SetCreatedAt(t time.Time) *TankUpdateOne {
-	tuo.mutation.SetCreatedAt(t)
-	return tuo
-}
-
-// SetNillableCreatedAt sets the createdAt field if the given value is not nil.
-func (tuo *TankUpdateOne) SetNillableCreatedAt(t *time.Time) *TankUpdateOne {
-	if t != nil {
-		tuo.SetCreatedAt(*t)
-	}
-	return tuo
-}
-
 // AddFromTankIdIDs adds the fromTankId edge to Tank by ids.
 func (tuo *TankUpdateOne) AddFromTankIdIDs(ids ...int) *TankUpdateOne {
 	tuo.mutation.AddFromTankIdIDs(ids...)
@@ -1081,13 +1045,6 @@ func (tuo *TankUpdateOne) sqlSave(ctx context.Context) (_node *Tank, err error) 
 			Type:   field.TypeString,
 			Value:  value,
 			Column: tank.FieldCountry,
-		})
-	}
-	if value, ok := tuo.mutation.CreatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: tank.FieldCreatedAt,
 		})
 	}
 	if tuo.mutation.FromTankIdCleared() {

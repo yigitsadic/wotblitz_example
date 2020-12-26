@@ -5,7 +5,6 @@ package ent
 import (
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/yigitsadic/wotblitz_example/ent/tank"
@@ -26,8 +25,6 @@ type Tank struct {
 	TankClass string `json:"tankClass,omitempty"`
 	// Country holds the value of the "country" field.
 	Country string `json:"country,omitempty"`
-	// CreatedAt holds the value of the "createdAt" field.
-	CreatedAt time.Time `json:"createdAt,omitempty"`
 	// Edges holds the relations/edges for other nodes in the graph.
 	// The values are being populated by the TankQuery when eager-loading is set.
 	Edges TankEdges `json:"edges"`
@@ -104,7 +101,6 @@ func (*Tank) scanValues() []interface{} {
 		&sql.NullBool{},   // isPremium
 		&sql.NullString{}, // tankClass
 		&sql.NullString{}, // country
-		&sql.NullTime{},   // createdAt
 	}
 }
 
@@ -144,11 +140,6 @@ func (t *Tank) assignValues(values ...interface{}) error {
 		return fmt.Errorf("unexpected type %T for field country", values[4])
 	} else if value.Valid {
 		t.Country = value.String
-	}
-	if value, ok := values[5].(*sql.NullTime); !ok {
-		return fmt.Errorf("unexpected type %T for field createdAt", values[5])
-	} else if value.Valid {
-		t.CreatedAt = value.Time
 	}
 	return nil
 }
@@ -211,8 +202,6 @@ func (t *Tank) String() string {
 	builder.WriteString(t.TankClass)
 	builder.WriteString(", country=")
 	builder.WriteString(t.Country)
-	builder.WriteString(", createdAt=")
-	builder.WriteString(t.CreatedAt.Format(time.ANSIC))
 	builder.WriteByte(')')
 	return builder.String()
 }

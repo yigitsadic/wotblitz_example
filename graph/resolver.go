@@ -2,7 +2,10 @@
 
 package graph
 
-import "github.com/yigitsadic/wotblitz_example/database"
+import (
+	"github.com/yigitsadic/wotblitz_example/database"
+	"github.com/yigitsadic/wotblitz_example/ent"
+)
 
 // This file will not be regenerated automatically.
 //
@@ -10,4 +13,5 @@ import "github.com/yigitsadic/wotblitz_example/database"
 
 type Resolver struct {
 	Repository *database.Repository
+	Client     *ent.Client
 }

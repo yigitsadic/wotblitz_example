@@ -6,7 +6,6 @@ import (
 	"context"
 	"fmt"
 	"sync"
-	"time"
 
 	"github.com/yigitsadic/wotblitz_example/ent/module"
 	"github.com/yigitsadic/wotblitz_example/ent/predicate"
@@ -37,7 +36,6 @@ type ModuleMutation struct {
 	id            *int
 	name          *string
 	moduleType    *string
-	createdAt     *time.Time
 	clearedFields map[string]struct{}
 	tanks         map[int]struct{}
 	removedtanks  map[int]struct{}
@@ -200,43 +198,6 @@ func (m *ModuleMutation) ResetModuleType() {
 	m.moduleType = nil
 }
 
-// SetCreatedAt sets the createdAt field.
-func (m *ModuleMutation) SetCreatedAt(t time.Time) {
-	m.createdAt = &t
-}
-
-// CreatedAt returns the createdAt value in the mutation.
-func (m *ModuleMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.createdAt
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old createdAt value of the Module.
-// If the Module object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *ModuleMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt reset all changes of the "createdAt" field.
-func (m *ModuleMutation) ResetCreatedAt() {
-	m.createdAt = nil
-}
-
 // AddTankIDs adds the tanks edge to Tank by ids.
 func (m *ModuleMutation) AddTankIDs(ids ...int) {
 	if m.tanks == nil {
@@ -304,15 +265,12 @@ func (m *ModuleMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *ModuleMutation) Fields() []string {
-	fields := make([]string, 0, 3)
+	fields := make([]string, 0, 2)
 	if m.name != nil {
 		fields = append(fields, module.FieldName)
 	}
 	if m.moduleType != nil {
 		fields = append(fields, module.FieldModuleType)
-	}
-	if m.createdAt != nil {
-		fields = append(fields, module.FieldCreatedAt)
 	}
 	return fields
 }
@@ -326,8 +284,6 @@ func (m *ModuleMutation) Field(name string) (ent.Value, bool) {
 		return m.Name()
 	case module.FieldModuleType:
 		return m.ModuleType()
-	case module.FieldCreatedAt:
-		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -341,8 +297,6 @@ func (m *ModuleMutation) OldField(ctx context.Context, name string) (ent.Value, 
 		return m.OldName(ctx)
 	case module.FieldModuleType:
 		return m.OldModuleType(ctx)
-	case module.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Module field %s", name)
 }
@@ -365,13 +319,6 @@ func (m *ModuleMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetModuleType(v)
-		return nil
-	case module.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Module field %s", name)
@@ -428,9 +375,6 @@ func (m *ModuleMutation) ResetField(name string) error {
 		return nil
 	case module.FieldModuleType:
 		m.ResetModuleType()
-		return nil
-	case module.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Module field %s", name)
@@ -537,7 +481,6 @@ type TankMutation struct {
 	isPremium            *bool
 	tankClass            *string
 	country              *string
-	createdAt            *time.Time
 	clearedFields        map[string]struct{}
 	fromTankId           map[int]struct{}
 	removedfromTankId    map[int]struct{}
@@ -843,43 +786,6 @@ func (m *TankMutation) ResetCountry() {
 	m.country = nil
 }
 
-// SetCreatedAt sets the createdAt field.
-func (m *TankMutation) SetCreatedAt(t time.Time) {
-	m.createdAt = &t
-}
-
-// CreatedAt returns the createdAt value in the mutation.
-func (m *TankMutation) CreatedAt() (r time.Time, exists bool) {
-	v := m.createdAt
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldCreatedAt returns the old createdAt value of the Tank.
-// If the Tank object wasn't provided to the builder, the object is fetched
-// from the database.
-// An error is returned if the mutation operation is not UpdateOne, or database query fails.
-func (m *TankMutation) OldCreatedAt(ctx context.Context) (v time.Time, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, fmt.Errorf("OldCreatedAt is allowed only on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, fmt.Errorf("OldCreatedAt requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldCreatedAt: %w", err)
-	}
-	return oldValue.CreatedAt, nil
-}
-
-// ResetCreatedAt reset all changes of the "createdAt" field.
-func (m *TankMutation) ResetCreatedAt() {
-	m.createdAt = nil
-}
-
 // AddFromTankIdIDs adds the fromTankId edge to Tank by ids.
 func (m *TankMutation) AddFromTankIdIDs(ids ...int) {
 	if m.fromTankId == nil {
@@ -1159,7 +1065,7 @@ func (m *TankMutation) Type() string {
 // this mutation. Note that, in order to get all numeric
 // fields that were in/decremented, call AddedFields().
 func (m *TankMutation) Fields() []string {
-	fields := make([]string, 0, 6)
+	fields := make([]string, 0, 5)
 	if m.name != nil {
 		fields = append(fields, tank.FieldName)
 	}
@@ -1174,9 +1080,6 @@ func (m *TankMutation) Fields() []string {
 	}
 	if m.country != nil {
 		fields = append(fields, tank.FieldCountry)
-	}
-	if m.createdAt != nil {
-		fields = append(fields, tank.FieldCreatedAt)
 	}
 	return fields
 }
@@ -1196,8 +1099,6 @@ func (m *TankMutation) Field(name string) (ent.Value, bool) {
 		return m.TankClass()
 	case tank.FieldCountry:
 		return m.Country()
-	case tank.FieldCreatedAt:
-		return m.CreatedAt()
 	}
 	return nil, false
 }
@@ -1217,8 +1118,6 @@ func (m *TankMutation) OldField(ctx context.Context, name string) (ent.Value, er
 		return m.OldTankClass(ctx)
 	case tank.FieldCountry:
 		return m.OldCountry(ctx)
-	case tank.FieldCreatedAt:
-		return m.OldCreatedAt(ctx)
 	}
 	return nil, fmt.Errorf("unknown Tank field %s", name)
 }
@@ -1262,13 +1161,6 @@ func (m *TankMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetCountry(v)
-		return nil
-	case tank.FieldCreatedAt:
-		v, ok := value.(time.Time)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetCreatedAt(v)
 		return nil
 	}
 	return fmt.Errorf("unknown Tank field %s", name)
@@ -1349,9 +1241,6 @@ func (m *TankMutation) ResetField(name string) error {
 		return nil
 	case tank.FieldCountry:
 		m.ResetCountry()
-		return nil
-	case tank.FieldCreatedAt:
-		m.ResetCreatedAt()
 		return nil
 	}
 	return fmt.Errorf("unknown Tank field %s", name)

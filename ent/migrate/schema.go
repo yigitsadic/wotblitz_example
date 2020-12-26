@@ -13,7 +13,6 @@ var (
 		{Name: "id", Type: field.TypeInt, Increment: true},
 		{Name: "name", Type: field.TypeString},
 		{Name: "module_type", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
 	}
 	// ModulesTable holds the schema information for the "modules" table.
 	ModulesTable = &schema.Table{
@@ -30,7 +29,6 @@ var (
 		{Name: "is_premium", Type: field.TypeBool},
 		{Name: "tank_class", Type: field.TypeString},
 		{Name: "country", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
 	}
 	// TanksTable holds the schema information for the "tanks" table.
 	TanksTable = &schema.Table{

@@ -5,7 +5,6 @@ package ent
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/facebook/ent/dialect/sql"
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
@@ -37,20 +36,6 @@ func (mu *ModuleUpdate) SetName(s string) *ModuleUpdate {
 // SetModuleType sets the moduleType field.
 func (mu *ModuleUpdate) SetModuleType(s string) *ModuleUpdate {
 	mu.mutation.SetModuleType(s)
-	return mu
-}
-
-// SetCreatedAt sets the createdAt field.
-func (mu *ModuleUpdate) SetCreatedAt(t time.Time) *ModuleUpdate {
-	mu.mutation.SetCreatedAt(t)
-	return mu
-}
-
-// SetNillableCreatedAt sets the createdAt field if the given value is not nil.
-func (mu *ModuleUpdate) SetNillableCreatedAt(t *time.Time) *ModuleUpdate {
-	if t != nil {
-		mu.SetCreatedAt(*t)
-	}
 	return mu
 }
 
@@ -199,13 +184,6 @@ func (mu *ModuleUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			Column: module.FieldModuleType,
 		})
 	}
-	if value, ok := mu.mutation.CreatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: module.FieldCreatedAt,
-		})
-	}
 	if mu.mutation.TanksCleared() {
 		edge := &sqlgraph.EdgeSpec{
 			Rel:     sqlgraph.M2M,
@@ -287,20 +265,6 @@ func (muo *ModuleUpdateOne) SetName(s string) *ModuleUpdateOne {
 // SetModuleType sets the moduleType field.
 func (muo *ModuleUpdateOne) SetModuleType(s string) *ModuleUpdateOne {
 	muo.mutation.SetModuleType(s)
-	return muo
-}
-
-// SetCreatedAt sets the createdAt field.
-func (muo *ModuleUpdateOne) SetCreatedAt(t time.Time) *ModuleUpdateOne {
-	muo.mutation.SetCreatedAt(t)
-	return muo
-}
-
-// SetNillableCreatedAt sets the createdAt field if the given value is not nil.
-func (muo *ModuleUpdateOne) SetNillableCreatedAt(t *time.Time) *ModuleUpdateOne {
-	if t != nil {
-		muo.SetCreatedAt(*t)
-	}
 	return muo
 }
 
@@ -445,13 +409,6 @@ func (muo *ModuleUpdateOne) sqlSave(ctx context.Context) (_node *Module, err err
 			Type:   field.TypeString,
 			Value:  value,
 			Column: module.FieldModuleType,
-		})
-	}
-	if value, ok := muo.mutation.CreatedAt(); ok {
-		_spec.Fields.Set = append(_spec.Fields.Set, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: module.FieldCreatedAt,
 		})
 	}
 	if muo.mutation.TanksCleared() {

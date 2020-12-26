@@ -3,8 +3,6 @@
 package ent
 
 import (
-	"time"
-
 	"github.com/yigitsadic/wotblitz_example/ent/module"
 	"github.com/yigitsadic/wotblitz_example/ent/schema"
 	"github.com/yigitsadic/wotblitz_example/ent/tank"
@@ -24,10 +22,6 @@ func init() {
 	moduleDescModuleType := moduleFields[1].Descriptor()
 	// module.ModuleTypeValidator is a validator for the "moduleType" field. It is called by the builders before save.
 	module.ModuleTypeValidator = moduleDescModuleType.Validators[0].(func(string) error)
-	// moduleDescCreatedAt is the schema descriptor for createdAt field.
-	moduleDescCreatedAt := moduleFields[2].Descriptor()
-	// module.DefaultCreatedAt holds the default value on creation for the createdAt field.
-	module.DefaultCreatedAt = moduleDescCreatedAt.Default.(func() time.Time)
 	tankFields := schema.Tank{}.Fields()
 	_ = tankFields
 	// tankDescName is the schema descriptor for name field.
@@ -46,8 +40,4 @@ func init() {
 	tankDescCountry := tankFields[4].Descriptor()
 	// tank.CountryValidator is a validator for the "country" field. It is called by the builders before save.
 	tank.CountryValidator = tankDescCountry.Validators[0].(func(string) error)
-	// tankDescCreatedAt is the schema descriptor for createdAt field.
-	tankDescCreatedAt := tankFields[5].Descriptor()
-	// tank.DefaultCreatedAt holds the default value on creation for the createdAt field.
-	tank.DefaultCreatedAt = tankDescCreatedAt.Default.(func() time.Time)
 }

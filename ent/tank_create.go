@@ -6,7 +6,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/facebook/ent/dialect/sql/sqlgraph"
 	"github.com/facebook/ent/schema/field"
@@ -56,20 +55,6 @@ func (tc *TankCreate) SetTankClass(s string) *TankCreate {
 // SetCountry sets the country field.
 func (tc *TankCreate) SetCountry(s string) *TankCreate {
 	tc.mutation.SetCountry(s)
-	return tc
-}
-
-// SetCreatedAt sets the createdAt field.
-func (tc *TankCreate) SetCreatedAt(t time.Time) *TankCreate {
-	tc.mutation.SetCreatedAt(t)
-	return tc
-}
-
-// SetNillableCreatedAt sets the createdAt field if the given value is not nil.
-func (tc *TankCreate) SetNillableCreatedAt(t *time.Time) *TankCreate {
-	if t != nil {
-		tc.SetCreatedAt(*t)
-	}
 	return tc
 }
 
@@ -204,10 +189,6 @@ func (tc *TankCreate) defaults() {
 		v := tank.DefaultIsPremium
 		tc.mutation.SetIsPremium(v)
 	}
-	if _, ok := tc.mutation.CreatedAt(); !ok {
-		v := tank.DefaultCreatedAt()
-		tc.mutation.SetCreatedAt(v)
-	}
 }
 
 // check runs all checks and user-defined validators on the builder.
@@ -241,9 +222,6 @@ func (tc *TankCreate) check() error {
 		if err := tank.CountryValidator(v); err != nil {
 			return &ValidationError{Name: "country", err: fmt.Errorf("ent: validator failed for field \"country\": %w", err)}
 		}
-	}
-	if _, ok := tc.mutation.CreatedAt(); !ok {
-		return &ValidationError{Name: "createdAt", err: errors.New("ent: missing required field \"createdAt\"")}
 	}
 	return nil
 }
@@ -311,14 +289,6 @@ func (tc *TankCreate) createSpec() (*Tank, *sqlgraph.CreateSpec) {
 			Column: tank.FieldCountry,
 		})
 		_node.Country = value
-	}
-	if value, ok := tc.mutation.CreatedAt(); ok {
-		_spec.Fields = append(_spec.Fields, &sqlgraph.FieldSpec{
-			Type:   field.TypeTime,
-			Value:  value,
-			Column: tank.FieldCreatedAt,
-		})
-		_node.CreatedAt = value
 	}
 	if nodes := tc.mutation.FromTankIdIDs(); len(nodes) > 0 {
 		edge := &sqlgraph.EdgeSpec{
