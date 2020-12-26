@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"github.com/yigitsadic/wotblitz_example/ent/predicate"
 	tank2 "github.com/yigitsadic/wotblitz_example/ent/tank"
 	"log"
 
@@ -15,23 +16,43 @@ import (
 )
 
 func (r *queryResolver) FilterTanks(ctx context.Context, country *model.Country, tier *int, tankClass *model.TankClass, isPremium *bool) ([]*model.Tank, error) {
+	var queryParams []predicate.Tank
+
 	if country != nil {
-		log.Println(*country)
+		queryParams = append(queryParams, tank2.Country(country.String()))
 	}
 
 	if tier != nil {
-		log.Println(*tier)
+		queryParams = append(queryParams, tank2.Tier(*tier))
 	}
 
 	if tankClass != nil {
-		log.Println(*tankClass)
+		queryParams = append(queryParams, tank2.TankClass(tankClass.String()))
 	}
 
 	if isPremium != nil {
-		log.Println(*isPremium)
+		queryParams = append(queryParams, tank2.IsPremium(*isPremium))
 	}
 
-	return nil, nil
+	var tanks []*model.Tank
+	foundTanks, err := r.Client.Tank.Query().Where(queryParams...).All(ctx)
+	if err != nil {
+		log.Println(err)
+		return nil, err
+	}
+
+	for _, tank := range foundTanks {
+		tanks = append(tanks, &model.Tank{
+			ID:        tank.ID,
+			Name:      tank.Name,
+			Tier:      tank.Tier,
+			IsPremium: tank.IsPremium,
+			TankClass: model.TankClass(tank.TankClass),
+			Country:   model.Country(tank.Country),
+		})
+	}
+
+	return tanks, nil
 }
 
 func (r *queryResolver) Search(ctx context.Context, term string) ([]model.SearchResult, error) {
