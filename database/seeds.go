@@ -19,6 +19,16 @@ func SeedDB(ctx context.Context, client *ent.Client) {
 		panic("unable to initialize transaction")
 	}
 
+	SeedFrance(tx, ctx)
+	SeedEuropeanNation(tx, ctx)
+
+	err = tx.Commit()
+	if err != nil {
+		panic(err)
+	}
+}
+
+func SeedFrance(tx *ent.Tx, ctx context.Context) {
 	r35, _ := tx.Tank.Create().
 		SetName("R35").
 		SetTier(1).
@@ -239,9 +249,136 @@ func SeedDB(ctx context.Context, client *ent.Client) {
 		AddPreviousTanks(bc_25_t_ap).
 		Save(ctx)
 	bc_25_t_ap.Update().AddNextTanks(bc_25_t).Save(ctx)
+}
 
-	err = tx.Commit()
-	if err != nil {
-		panic(err)
-	}
+func SeedEuropeanNation(tx *ent.Tx, ctx context.Context) {
+	vickers_mk_f, _ := tx.Tank.Create().
+		SetName("Vickers Mk. F").
+		SetTier(1).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassLightTank.String()).
+		Save(ctx)
+
+	tp10, _ := tx.Tank.Create().
+		SetName("10TOP").
+		SetTier(2).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassLightTank.String()).
+		AddPreviousTanks(vickers_mk_f).
+		Save(ctx)
+	vickers_mk_f.Update().AddNextTanks(tp10).Save(ctx)
+
+	tp14, _ := tx.Tank.Create().
+		SetName("14TP").
+		SetTier(3).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassLightTank.String()).
+		AddPreviousTanks(tp10).
+		Save(ctx)
+	tp10.Update().AddNextTanks(tp14).Save(ctx)
+
+	lago, _ := tx.Tank.Create().
+		SetName("Lago").
+		SetTier(4).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassMediumTank.String()).
+		AddPreviousTanks(tp14).
+		Save(ctx)
+	tp14.Update().AddNextTanks(lago).Save(ctx)
+
+	strv_m_42, _ := tx.Tank.Create().
+		SetName("Strv m/42").
+		SetTier(5).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassMediumTank.String()).
+		AddPreviousTanks(lago).
+		Save(ctx)
+	lago.Update().AddNextTanks(strv_m_42).Save(ctx)
+
+	strv_74, _ := tx.Tank.Create().
+		SetName("Strv 74").
+		SetTier(6).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassMediumTank.String()).
+		AddPreviousTanks(strv_m_42).
+		Save(ctx)
+	p43_bis, _ := tx.Tank.Create().
+		SetName("P.43 bis").
+		SetTier(6).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassMediumTank.String()).
+		AddPreviousTanks(strv_m_42).
+		Save(ctx)
+
+	strv_m_42.Update().AddNextTanks(strv_74, p43_bis).Save(ctx)
+
+	leo, _ := tx.Tank.Create().
+		SetName("Leo").
+		SetTier(7).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassMediumTank.String()).
+		AddPreviousTanks(strv_74).
+		Save(ctx)
+	p43_ter, _ := tx.Tank.Create().
+		SetName("P.43 ter").
+		SetTier(7).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassMediumTank.String()).
+		AddPreviousTanks(strv_74).
+		Save(ctx)
+
+	strv_74.Update().AddNextTanks(leo).Save(ctx)
+	p43_bis.Update().AddNextTanks(p43_ter).Save(ctx)
+
+	emil, _ := tx.Tank.Create().
+		SetName("Emil I").
+		SetTier(8).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassHeavyTank.String()).
+		AddPreviousTanks(leo).
+		Save(ctx)
+	p44_pantera, _ := tx.Tank.Create().
+		SetName("P.44 Pantera").
+		SetTier(8).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassMediumTank.String()).
+		AddPreviousTanks(p43_ter).
+		Save(ctx)
+
+	leo.Update().AddNextTanks(emil).Save(ctx)
+	p43_ter.Update().AddNextTanks(p44_pantera).Save(ctx)
+
+	emil2, _ := tx.Tank.Create().
+		SetName("Emil II").
+		SetTier(9).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassHeavyTank.String()).
+		AddPreviousTanks(emil).
+		Save(ctx)
+	standard_b, _ := tx.Tank.Create().
+		SetName("Standard B").
+		SetTier(9).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassMediumTank.String()).
+		AddPreviousTanks(p44_pantera).
+		Save(ctx)
+
+	emil.Update().AddNextTanks(emil2).Save(ctx)
+	p44_pantera.Update().AddNextTanks(standard_b).Save(ctx)
+
+	kranvagn, _ := tx.Tank.Create().
+		SetName("Kranvagn").
+		SetTier(10).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassHeavyTank.String()).
+		Save(ctx)
+	progetto_65, _ := tx.Tank.Create().
+		SetName("Progetto 65").
+		SetTier(10).
+		SetCountry(model.CountryEuropeanNation.String()).
+		SetTankClass(model.TankClassMediumTank.String()).
+		Save(ctx)
+
+	emil2.Update().AddNextTanks(kranvagn).Save(ctx)
+	standard_b.Update().AddNextTanks(progetto_65).Save(ctx)
 }
