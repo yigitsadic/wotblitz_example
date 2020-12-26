@@ -5,6 +5,7 @@ package graph
 
 import (
 	"context"
+	"github.com/yigitsadic/wotblitz_example/ent/module"
 	"github.com/yigitsadic/wotblitz_example/ent/predicate"
 	tank2 "github.com/yigitsadic/wotblitz_example/ent/tank"
 	"log"
@@ -58,7 +59,7 @@ func (r *queryResolver) FilterTanks(ctx context.Context, country *model.Country,
 func (r *queryResolver) Search(ctx context.Context, term string) ([]model.SearchResult, error) {
 	var searchResult []model.SearchResult
 
-	foundTanks, err := r.Repository.SearchInTanks(term)
+	foundTanks, err := r.Client.Tank.Query().Where(tank2.NameContains(term)).All(ctx)
 	if err != nil {
 		log.Println(err)
 		return nil, err
@@ -66,25 +67,25 @@ func (r *queryResolver) Search(ctx context.Context, term string) ([]model.Search
 
 	for _, tank := range foundTanks {
 		searchResult = append(searchResult, model.Tank{
-			ID:        tank.Id,
+			ID:        tank.ID,
 			Name:      tank.Name,
 			Tier:      tank.Tier,
 			IsPremium: tank.IsPremium,
-			TankClass: shared.MapTankClass(tank.TankClass),
-			Country:   shared.MapTankCountry(tank.Country),
+			TankClass: model.TankClass(tank.TankClass),
+			Country:   model.Country(tank.Country),
 		})
 	}
 
-	foundModules, err := r.Repository.SearchInModules(term)
+	foundModules, err := r.Client.Module.Query().Where(module.NameContains(term)).All(ctx)
 	if err != nil {
 		log.Println(err)
 		return nil, err
 	}
 
-	for _, module := range foundModules {
+	for _, foundModule := range foundModules {
 		searchResult = append(searchResult, model.Module{
-			Type: shared.MapModuleType(module.Type),
-			Name: module.Name,
+			Type: model.ModuleType(foundModule.ModuleType),
+			Name: foundModule.Name,
 		})
 	}
 
