@@ -36,7 +36,7 @@ func SeedDB(ctx context.Context, client *ent.Client) {
 		AddPreviousTanks(r35).
 		Save(ctx)
 
-	r35.Update().AddNextTanks(r35).Save(ctx)
+	r35.Update().AddNextTanks(amx_38).Save(ctx)
 
 	d2, _ := tx.Tank.Create().
 		SetName("D2").
