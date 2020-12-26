@@ -10,10 +10,8 @@ import (
 	tank2 "github.com/yigitsadic/wotblitz_example/ent/tank"
 	"log"
 
-	"github.com/yigitsadic/wotblitz_example/database"
 	"github.com/yigitsadic/wotblitz_example/graph/generated"
 	"github.com/yigitsadic/wotblitz_example/graph/model"
-	"github.com/yigitsadic/wotblitz_example/shared"
 )
 
 func (r *queryResolver) FilterTanks(ctx context.Context, country *model.Country, tier *int, tankClass *model.TankClass, isPremium *bool) ([]*model.Tank, error) {
@@ -207,32 +205,7 @@ func (r *tankResolver) PreviousTanks(ctx context.Context, obj *model.Tank) ([]*m
 }
 
 func (r *tankResolver) Modules(ctx context.Context, obj *model.Tank, status *model.ModuleFilter) ([]*model.Module, error) {
-	var modules []*model.Module
-	var err error
-	var foundModules []*database.ModuleSchema
-
-	if status == nil {
-		foundModules, err = r.Repository.FetchModulesForTank(obj.ID)
-	} else if *status == model.ModuleFilterStock {
-		foundModules, err = r.Repository.FetchStockModulesForTank(obj.ID)
-	} else if *status == model.ModuleFilterUpgrade {
-		foundModules, err = r.Repository.FetchUpgradeModulesForTank(obj.ID)
-	} else {
-		foundModules, err = r.Repository.FetchModulesForTank(obj.ID)
-	}
-
-	if err != nil {
-		return nil, nil
-	}
-
-	for _, m := range foundModules {
-		modules = append(modules, &model.Module{
-			Type: shared.MapModuleType(m.Type),
-			Name: m.Name,
-		})
-	}
-
-	return modules, nil
+	return nil, nil
 }
 
 // Query returns generated.QueryResolver implementation.

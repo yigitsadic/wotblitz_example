@@ -6,6 +6,8 @@ import (
 	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/go-chi/chi"
 	"github.com/go-chi/chi/middleware"
+	_ "github.com/go-sql-driver/mysql"
+	"github.com/spf13/viper"
 	"github.com/yigitsadic/wotblitz_example/database"
 	"github.com/yigitsadic/wotblitz_example/ent"
 	"github.com/yigitsadic/wotblitz_example/ent/migrate"
@@ -13,17 +15,17 @@ import (
 	"github.com/yigitsadic/wotblitz_example/graph/generated"
 	"log"
 	"net/http"
-	"os"
-
-	_ "github.com/go-sql-driver/mysql"
 )
 
+func init() {
+	viper.AutomaticEnv()
+
+	viper.SetDefault("PORT", "3700")
+	viper.SetDefault("DATA_SOURCE", "root:@tcp(localhost:3306)/wotblitzexample")
+}
+
 func main() {
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "3700"
-	}
-	client, err := ent.Open("mysql", "root:@tcp(localhost:3306)/wotblitzexample")
+	client, err := ent.Open("mysql", viper.GetString("DATA_SOURCE"))
 	if err != nil {
 		log.Fatalf("failed connecting to mysql: %v", err)
 	}
@@ -41,17 +43,13 @@ func main() {
 
 	database.SeedDB(ctx, client)
 
-	schema := database.LoadFromFile()
-	repository := database.NewRepository(schema)
-
 	r := chi.NewRouter()
 	r.Use(middleware.Logger)
 
-	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{Repository: repository, Client: client}}))
+	srv := handler.NewDefaultServer(generated.NewExecutableSchema(generated.Config{Resolvers: &graph.Resolver{Client: client}}))
 
 	r.Handle("/", playground.Handler("GraphQL playground", "/query"))
 	r.Handle("/query", srv)
 
-	log.Printf("connect to http://localhost:%s/ for GraphQL playground", port)
-	log.Fatal(http.ListenAndServe(":"+port, r))
+	log.Fatal(http.ListenAndServe(":"+viper.GetString("PORT"), r))
 }
