@@ -115,7 +115,7 @@ func (r *queryResolver) Tank(ctx context.Context, name string) (*model.Tank, err
 func (r *queryResolver) TechTree(ctx context.Context, country model.Country) ([]*model.Tank, error) {
 	var tanks []*model.Tank
 
-	foundTanks, err := r.Repository.FetchTanksByCountry(country)
+	foundTanks, err := r.Client.Tank.Query().Where(tank2.Country(country.String())).All(ctx)
 
 	if err != nil {
 		log.Println(err)
@@ -125,12 +125,12 @@ func (r *queryResolver) TechTree(ctx context.Context, country model.Country) ([]
 	for _, tank := range foundTanks {
 
 		tanks = append(tanks, &model.Tank{
-			ID:        tank.Id,
+			ID:        tank.ID,
 			Name:      tank.Name,
 			Tier:      tank.Tier,
 			IsPremium: tank.IsPremium,
-			TankClass: shared.MapTankClass(tank.TankClass),
-			Country:   shared.MapTankCountry(tank.Country),
+			TankClass: model.TankClass(tank.TankClass),
+			Country:   model.Country(tank.Country),
 		})
 	}
 
