@@ -6,6 +6,8 @@ I have no relationship with World of Tanks or Wargaming.
 
 This is just a hobby project which I give a try to entgo.
 
+Tanks and modules db is currently unfinished. I will continue to add tanks.
+
 GraphQL Playground link:
 https://guarded-savannah-12730.herokuapp.com
 
