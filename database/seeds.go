@@ -371,12 +371,14 @@ func SeedEuropeanNation(tx *ent.Tx, ctx context.Context) {
 		SetTier(10).
 		SetCountry(model.CountryEuropeanNation.String()).
 		SetTankClass(model.TankClassHeavyTank.String()).
+		AddPreviousTanks(emil2).
 		Save(ctx)
 	progetto_65, _ := tx.Tank.Create().
 		SetName("Progetto 65").
 		SetTier(10).
 		SetCountry(model.CountryEuropeanNation.String()).
 		SetTankClass(model.TankClassMediumTank.String()).
+		AddPreviousTanks(standard_b).
 		Save(ctx)
 
 	emil2.Update().AddNextTanks(kranvagn).Save(ctx)
